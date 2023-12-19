@@ -1,6 +1,6 @@
 NAME = minishell
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread -ggdb -Og -fsanitize=thread,undefined -fno-omit-frame-pointer
+CFLAGS = -Wall -Wextra -Werror -ggdb -O0 -lreadline -fsanitize=thread,undefined -fno-omit-frame-pointer
 SRCS = main.c
 OBJS = $(SRCS:.c=.o)
 
