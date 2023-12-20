@@ -8,5 +8,5 @@ extern int	g_last_proc_code;
 
 void	free2d(char **ptr, bool handle);
 int		execute(char **command, int input, int output, int *status);
-
+char	*substitute(char *buf);
 #endif
