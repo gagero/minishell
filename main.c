@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-char	*g_cwd = NULL;
 char	**g_last_environ = NULL;
 int		g_last_proc_code = 0;
 
@@ -13,16 +12,23 @@ int main(void)
 {
 	char	*command;
 	char	*prompt;
+	char	**split;
+	int		ret;
+	char	*cwd;
 
-	g_cwd = getenv("HOME");
-	while (1)
+	if (chdir(getenv("HOME")) == -1)
 	{
-		prompt = ft_strjoin(g_cwd, "> ");
-		command = readline(prompt);
-		free(prompt);
-		char **split = ft_split(command, ' ');
-		int ret;
-		run_command(split, STDIN_FILENO, STDOUT_FILENO, &ret);
-		ft_printf("ret: %d\n", ret);
+		perror("Minishell: init error");
+		return (1);
 	}
+	/* while (1) */ // segfaults
+	/* { */
+		cwd = getcwd(NULL, 0);
+		prompt = ft_strjoin(cwd, "> ");
+		command = readline(prompt);
+		free(cwd);
+		free(prompt);
+		split = ft_split(command, ' ');
+		execute(split, STDIN_FILENO, STDOUT_FILENO, &ret);
+	/* } */
 }

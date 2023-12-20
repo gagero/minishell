@@ -3,6 +3,8 @@
 #include "libft/libft.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "builtin.h"
+#include <unistd.h>
 
 bool	is_builtin(char *command)
 {
@@ -34,27 +36,45 @@ int echo(char *str, const bool n_switch)
 
 int pwd(void)
 {
-	if (ft_printf(g_cwd) == -1)
+	char	*w;
+
+	w = getcwd(NULL, 0);
+	if (ft_printf(w) == -1)
+	{
+		free(w);
 		return (1);
+	}
+	free(w);
 	return (0);
 }
 
 void exit_shell(void)
 {
-	// TODO: freeing
+	// TODO: free data
 	exit(0);
 }
 
 int builtin(char **command)
 {
 	if (ft_strncmp(command[0], "exit", 4) == 0)
-		exit_shell();
+		return (exit_shell(), 0);
 	if (ft_strncmp(command[0], "pwd", 3) == 0)
-		pwd();
-	if (ft_strncmp(command[0], "exit", 4) == 0)
-		exit_shell();
-	if (ft_strncmp(command[0], "exit", 4) == 0)
-		exit_shell();
-	if (ft_strncmp(command[0], "exit", 4) == 0)
-		exit_shell();
+		return (pwd());
+	if (ft_strncmp(command[0], "cd", 2) == 0)
+		cd(command[1]);
+	if (ft_strncmp(command[0], "echo", 4) == 0)
+	{
+		if (ft_strncmp(command[1], "-n", 2) == 0)
+			return (echo(command[2], true));
+		if (command[1] && ft_strncmp(command[2], "-n", 2) == 0)
+			return (echo(command[1], true));
+		return (echo(command[1], false));
+	}
+	if (ft_strncmp(command[0], "export", 6) == 0)
+		export(command[1], command[2]);
+	if (ft_strncmp(command[0], "unset", 5) == 0)
+		unset(command[1], __environ);
+	if (ft_strncmp(command[0], "env", 3) == 0)
+		return (env());
+	return (0);
 }

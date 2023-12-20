@@ -5,16 +5,22 @@
 #include "libft/libft.h"
 #include "minishell.h"
 #include <stdbool.h>
+#include "builtin.h"
+#include <errno.h>
 
-// Frees handle too
-void free2d(char **ptr)
+// Frees handle if bool is true
+void free2d(char **ptr, bool handle)
 {
 	int	i;
 
 	i = 0;
 	while(ptr[i])
-		free(ptr[i++]);
-	free(ptr);
+	{
+		free(ptr[i]);
+		i++;
+	}
+	if (handle)
+		free(ptr);
 }
 
 static char	*append(char *command, char *split)
@@ -57,11 +63,11 @@ static char	*find_path(char **split, char *command)
 		i++;
 	}
 	/* free(command); */
-	free2d(split);
+	free2d(split, true);
 	return (path);
 }
 
-char	*find_command_path(char *command)
+static char	*find_command_path(char *command)
 {
 	char	**split;
 	char	*cur;
@@ -83,20 +89,34 @@ char	*find_command_path(char *command)
 	return (find_path(split, command));
 }
 
-pid_t	run_command(char **command, int input, int output, int *status)
+static void child_error(bool expr, int errno_value)
+{
+	if (expr)
+	{
+		errno = errno_value;
+		perror("Minishell");
+		exit(1);
+	}
+}
+
+static pid_t	run_command(char **command, int input, int output, int *status)
 {
 	pid_t	fork_pid;
 
 	fork_pid = fork();
 	if (fork_pid == 0)
 	{
-		dup2(input, STDIN_FILENO);
-		dup2(output, STDOUT_FILENO);
-		close(input);
-		close(output);
-		if (is_builtin(command[0]))
-			return (builtin(command));
-		else if (execve(command[0], command, NULL) == -1)
+		if (input != STDIN_FILENO)
+		{
+			child_error(dup2(input, STDIN_FILENO), errno);
+			close(input);			
+		}
+		if (output != STDOUT_FILENO)
+		{
+			child_error(dup2(output, STDOUT_FILENO), errno);
+			close(output);			
+		}
+		if (execve(command[0], command, NULL) == -1)
 		{
 			perror("Minishell");
 			exit(EXIT_FAILURE);
@@ -109,4 +129,21 @@ pid_t	run_command(char **command, int input, int output, int *status)
 	close(input);
 	close(output);
 	return (fork_pid);
+}
+
+int	execute(char **command, int input, int output, int *status)
+{
+	if (command && is_builtin(command[0]))
+		return (builtin(command));
+	command[0] = find_command_path(command[0]);
+	if (command[0] == NULL)
+	{
+		errno = ENOENT;
+		perror("Minishell");
+		return (1);
+	}
+	if (run_command(command, input, output, status) < 0)
+		return (1);
+	free2d(command, true);
+	return (0);
 }

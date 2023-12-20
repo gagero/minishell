@@ -1,7 +1,7 @@
 NAME = minishell
 CC = cc
-CFLAGS = -Wall -Wextra -ggdb -O0 -lreadline -fno-omit-frame-pointer
-SRCS = main.c execute.c env.c builtin.c builtin2.c
+CFLAGS = -Wall -Wextra -ggdb -O0 -lreadline -fno-omit-frame-pointer -fsanitize=address,leak,undefined
+SRCS = main.c execute.c builtin.c builtin2.c
 OBJS = $(SRCS:.c=.o)
 LIBFT = libft/libft.a
 
