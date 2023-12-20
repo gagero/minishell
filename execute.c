@@ -9,7 +9,7 @@
 #include <errno.h>
 
 // Frees handle if bool is true
-void free2d(char **ptr, bool handle)
+void	free2d(char **ptr, bool handle)
 {
 	int	i;
 
@@ -99,39 +99,41 @@ static void child_error(bool expr, int errno_value)
 	}
 }
 
-static pid_t	run_command(char **command, int input, int output, int *status)
+static void	run_command(char **command, int input, int output, int *status, char **environment)
 {
-	pid_t	fork_pid;
-
-	fork_pid = fork();
-	if (fork_pid == 0)
+	running_process = fork();
+	if (running_process == 0)
 	{
 		if (input != STDIN_FILENO)
 		{
-			child_error(dup2(input, STDIN_FILENO), errno);
-			close(input);			
+			child_error((dup2(input, STDIN_FILENO) < 0), errno);
+			close(input);
 		}
 		if (output != STDOUT_FILENO)
 		{
-			child_error(dup2(output, STDOUT_FILENO), errno);
-			close(output);			
+			child_error((dup2(output, STDOUT_FILENO) < 0), errno);
+			close(output);
 		}
-		if (execve(command[0], command, NULL) == -1)
+		if (execve(command[0], command, environment) == -1)
 		{
 			perror("Minishell");
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
-	if (fork_pid < 0)
+	if (running_process < 0)
 		perror("Minishell");
 	else
-		waitpid(fork_pid, status, 0);
-	close(input);
-	close(output);
-	return (fork_pid);
+	{
+		waitpid(running_process, status, 0);
+		running_process = 0;
+	}
+	if (input != STDIN_FILENO)
+		close(input);
+	if (output != STDOUT_FILENO)
+		close(output);
 }
 
-int	execute(char **command, int input, int output, int *status)
+int	execute(char **command, int input, int output, int *status, char **environment)
 {
 	if (command && is_builtin(command[0]))
 		return (builtin(command));
@@ -142,7 +144,8 @@ int	execute(char **command, int input, int output, int *status)
 		perror("Minishell");
 		return (1);
 	}
-	if (run_command(command, input, output, status) < 0)
+	run_command(command, input, output, status, environment);
+	if (running_process < 0)
 		return (1);
 	free2d(command, true);
 	return (0);
