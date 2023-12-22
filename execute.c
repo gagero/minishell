@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -99,11 +100,21 @@ static void child_error(bool expr, int errno_value)
 	}
 }
 
+// TODO: error handling
+static void child_init(void)
+{
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+}
+
 static void	run_command(char **command, int input, int output, int *status, char **environment)
 {
-	running_process = fork();
-	if (running_process == 0)
+	char	*err_str;
+
+	g_running_process = fork();
+	if (g_running_process == 0)
 	{
+		child_init();
 		if (input != STDIN_FILENO)
 		{
 			child_error((dup2(input, STDIN_FILENO) < 0), errno);
@@ -116,16 +127,18 @@ static void	run_command(char **command, int input, int output, int *status, char
 		}
 		if (execve(command[0], command, environment) == -1)
 		{
-			perror("Minishell");
+			err_str = ft_strjoin("Minishell: ", command[0]);
+			perror(err_str);
+			free(err_str);
 			exit(1);
 		}
 	}
-	if (running_process < 0)
-		perror("Minishell");
+	if (g_running_process < 0)
+		perror("Minishell: fork error");
 	else
 	{
-		waitpid(running_process, status, 0);
-		running_process = 0;
+		waitpid(g_running_process, status, 0);
+		g_running_process = 0;
 	}
 	if (input != STDIN_FILENO)
 		close(input);
@@ -145,7 +158,7 @@ int	execute(char **command, int input, int output, int *status, char **environme
 		return (1);
 	}
 	run_command(command, input, output, status, environment);
-	if (running_process < 0)
+	if (g_running_process < 0)
 		return (1);
 	free2d(command, true);
 	return (0);

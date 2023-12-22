@@ -8,5 +8,6 @@ int		env(void);
 int		cd(char *new_path);
 int		builtin(char **command);
 bool	is_builtin(char *command);
+void	exit_shell(void);
 
 #endif

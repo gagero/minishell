@@ -1,37 +1,66 @@
 #include "minishell.h"
-#include "testing.h"
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "libft/libft.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include "builtin.h"
+#include <termios.h>
+#include <fcntl.h>
 
 char	**g_last_environ = NULL;
 int		g_last_proc_code = 0;
-pid_t	running_process = 0;
+pid_t	g_running_process = 0;
 
+// proof of concept, need to implement other signals
 void generic_sig_handler(int sig)
 {
-	if (running_process != 0) // TODO: don't use a global variable?
+	if (g_running_process > 0) // TODO: don't use a global variable? (would need to establish signal disposition in run_command())
 	{
-		kill(running_process, sig);
+		kill(g_running_process, sig);
 		return ;
 	}
-	// proof of concept, need to implement other signals
 	if (sig == SIGINT)
 	{
 		ft_printf("\n");
 		rl_on_new_line();
+		rl_replace_line("", 1);
+		rl_redisplay();
+	}
+	if (sig == SIGQUIT)
+	{
+		rl_replace_line("", 1);
+		rl_redisplay();
+		return ;
 	}
 }
 
-static void init(void)
+inline static void init_error(bool expr)
 {
-	sigaction(SIGINT, SIG_IGN, NULL);
+	if (expr)
+	{
+		perror("Minishell: init error");
+		exit(0);
+	}
 }
 
-// TODO: set terminal lflag to ISIG for SIGQUIT (termios_p)
+inline static void init(void)
+{
+	struct sigaction	sa;
+	struct termios		current;
+	int					tty_fd;
+
+	sa.sa_handler = generic_sig_handler;
+	sa.sa_flags = SA_RESTART; // use SA_SIGINFO as well?
+	init_error(sigaction(SIGINT, &sa, NULL) == -1);
+	init_error(tcgetattr(0, &current) == -1);
+	tty_fd = open(ttyname(0), O_RDONLY);
+	current.c_lflag |= ISIG;
+	init_error(tcsetattr(tty_fd, TCSANOW, &current) == -1);
+	init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
+	close(tty_fd);
+}
 
 int main(void)
 {
@@ -48,10 +77,15 @@ int main(void)
 	}
 	while (1)
 	{
-		cwd = getcwd(NULL, 0); // cosmetic
-		prompt = ft_strjoin(cwd, "> ");
+		cwd = getcwd(NULL, 0); // cosmetic, leaks
+		prompt = ft_strjoin(cwd, "> "); // leaks
 		command = readline(prompt);
-		if (!command || !command[0])
+		if (!command)
+		{
+			ft_printf("\n");
+			exit_shell();
+		}
+		if (!command[0])
 			continue ;
 		add_history(command);
 		free(cwd);
@@ -62,8 +96,13 @@ int main(void)
 		The split variable can be treated as a stand-in for tokens.
 		*/
 		if (ft_strchr(command, '$'))
+		{
 			command = substitute(command);
-		split = ft_split(command, ' ');
+			if (!command)
+				exit_shell();
+		}
+		split = ft_split(command, ' '); // leaks
 		execute(split, STDIN_FILENO, STDOUT_FILENO, &g_last_proc_code, NULL);
+		free(command);
 	}
 }

@@ -1,0 +1,48 @@
++ [ ] Lexer
+  + [ ] Watch for = sign in envvar assignments
+  + [ ] Pipes
+  + [ ] Redirections
+  + [ ] Quotes (both single and double)
++ [ ] Parser
++ [ ] Establish order of operations
++ [ ] Redirections
+  + Normal redirections should be handled by the run_command() function, probably just needs the parser done
+  + [ ] Appends
+    + Can be handled by run_command() but need to open() the file with O_APPEND
+  + [ ] Heredocs
+    + [ ] Handle SIGINT
+      + [ ] Add custom signal disposition before reading from stdin
+  + [ ] Permission check for writing to file
++ [ ] Pipes
+  + Should be handled by the run_command() function, probably just needs the parser done
++ [X] Envvar substitution
+  + [X] Fix segfault
++ [-] Signals
+  + [X] SIGINT
+  + [ ] SIGQUIT
+    + [ ] Prints "^\", potenially unfixable
++ [X] C-d
+  + [X] Fix segfault
++ [X] History
++ [ ] Prompt and reading
+  + [ ] Prompt is currently only absolute path, no home shortening, probably don't need to fix
++ [X] Builtins
+  + [X] Reworked echo
++ [ ] Memory leaks
+  + [ ] Split isn't freeing properly but it's only for testing
+
++ [-] Needs testing
+  + [-] Builtins
+    + [X] cd
+    + [ ] echo
+    + [ ] pwd
+    + [ ] env
+    + [ ] export
+      + Currently only works in the form src_shell{export name value}, will be fixed by Lexer and Parser
+  + [ ] envvar substitution
+    + [ ] Normal envvars
+    + [ ] Last process code (src_shell{$?})
+
+* Notes
+** Don't forget to turn off the sanitizers (-fsanitize=address,leak,undefined in Makefile) when using valgrind
+** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work

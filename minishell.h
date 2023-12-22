@@ -6,7 +6,7 @@
 extern char	*g_cwd;
 extern char	**g_last_environ;
 extern int	g_last_proc_code;
-extern pid_t running_process;
+extern pid_t g_running_process;
 
 void	free2d(char **ptr, bool handle);
 int		execute(char **command, int input, int output, int *status, char **environment);

@@ -4,16 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 
-static unsigned int size2d(char **arr)
-{
-	unsigned int	i;
-
-	i = 0;
-	while(arr[i])
-		i++;
-	return (i);
-}
-
 // TODO: test
 static char	*substitute_into_string(char *string, char *to_replace, char *replace_with)
 {
@@ -23,13 +13,13 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 	int		i;
 	char	*ret;
 
-	components = malloc(ft_strlen(string) * sizeof(char *));
-	ret = malloc(ft_strlen(string) + (ft_strlen(to_replace) * (size2d(components) / 2)));
+	components = malloc((ft_strlen(string) + 1) * sizeof(char *));
+	ret = malloc(ft_strlen(string) - ft_strlen(to_replace) + ft_strlen(replace_with) + 1); // TODO: double check math
 	if (!components || !ret)
 		return (free(components), free(ret), NULL);
 	*ret = 0;
 	beg_ptr = string;
-	end_ptr = ft_strnstr(string, to_replace, ft_strlen(string));
+	end_ptr = ft_strnstr(beg_ptr, to_replace, ft_strlen(string));
 	i = 0;
 	while (end_ptr)
 	{
@@ -37,7 +27,7 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 		if (!components[i++])
 			return (NULL);
 		beg_ptr += ft_strlen(to_replace) + (end_ptr - string /* - 1*/);
-		end_ptr = ft_strnstr(string, to_replace, ft_strlen(string));
+		end_ptr = ft_strnstr(beg_ptr, to_replace, ft_strlen(string));
 	}
 	components[i] = NULL;
 	i = 0;
@@ -55,18 +45,23 @@ char	*substitute(char *buf)
 	char	*dollar_ptr;
 	char	*word_end;
 	char	*name;
+	char	*replacement;
 
 	dollar_ptr = ft_strchr(buf, '$');
 	word_end = ft_strchr(dollar_ptr, ' ');
 	if (!word_end)
 		word_end = dollar_ptr + ft_strlen(dollar_ptr);
-	name = ft_substr(dollar_ptr, 0, word_end - dollar_ptr);
+	name = ft_substr(dollar_ptr, 1, word_end - dollar_ptr);
 	if (!name)
 		return (NULL);
+	replacement = getenv(name);
+	if (!replacement)
+		replacement = ft_strdup("\n");
 	if (strcmp(name, "$?") != 0)
-		dollar_ptr = substitute_into_string(buf, name, getenv(name));
+		dollar_ptr = substitute_into_string(buf, name, replacement);
 	else
 		dollar_ptr = substitute_into_string(buf, name, ft_itoa(g_last_proc_code));
 	free(name);
+	free(replacement);
 	return (dollar_ptr);
 }

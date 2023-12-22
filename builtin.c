@@ -20,15 +20,43 @@ bool	is_builtin(char *command)
 }
 
 // n_switch is true if -n is passed, str is modified but not freed
-int echo(char *str, const bool n_switch)
+int echo(char **command)
 {
-	if (!str || !str[0])
-		str = "\n";
-	else if (n_switch && str[ft_strlen(str) - 1] == 'n' && str[ft_strlen(str) - 2] == '\\')
-		str = ft_substr(str, 0, ft_strlen(str) - 2);
-	if (ft_printf(str) == -1)
+	int		i;
+	char	*to_print;
+	bool	trim;
+
+	i = 0;
+	while(command[i])
+		i++;
+	if (i == 1)
+		to_print = ft_strdup("\n");
+	else if (i == 2)
 	{
-		perror("Minishell: echo: write error");
+		if (ft_strncmp("-n", command[1], ft_strlen(command[1])) == 0)
+			to_print = ft_strdup("\n");
+		else
+			to_print = ft_strdup(command[1]);
+	}
+	else
+	{
+		i = 1;
+		trim = false;
+		if (ft_strncmp("-n", command[1], ft_strlen(command[1])) == 0)
+		{
+			i = 2;
+			trim = true;
+		}
+		*to_print = 0;
+		while(command[i])
+		{
+			to_print = ft_strjoin(to_print, command[i]);
+			i++;
+		}
+	}
+	if (ft_putstr_fd(to_print, 1) == -1 || (!trim && write(1, "\n", 1) == -1))
+	{
+		write(2, "Minishell: echo: write error\n", 29);
 		return (1);
 	}
 	return (0);
@@ -61,19 +89,17 @@ int builtin(char **command)
 	if (ft_strncmp(command[0], "pwd", 3) == 0)
 		return (pwd());
 	if (ft_strncmp(command[0], "cd", 2) == 0)
-		cd(command[1]);
-	if (ft_strncmp(command[0], "echo", 4) == 0)
 	{
-		if (ft_strncmp(command[1], "-n", 2) == 0)
-			return (echo(command[2], true));
-		if (command[1] && ft_strncmp(command[2], "-n", 2) == 0)
-			return (echo(command[1], true));
-		return (echo(command[1], false));
+		if (command + 1)
+			return (cd(command[1]));
+		return (cd(NULL));
 	}
+	if (ft_strncmp(command[0], "echo", 4) == 0)
+		return (echo(command));
 	if (ft_strncmp(command[0], "export", 6) == 0)
-		export(command[1], command[2]);
+		return (export(command[1], command[2]));
 	if (ft_strncmp(command[0], "unset", 5) == 0)
-		unset(command[1], __environ);
+		return (unset(command[1], __environ));
 	if (ft_strncmp(command[0], "env", 3) == 0)
 		return (env());
 	return (0);

@@ -1,4 +1,5 @@
 #include "minishell.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "libft/libft.h"
@@ -108,8 +109,7 @@ int cd(char *new)
 			return (1);
 		}
 	}
-	// TODO: relative path?
-	if (chdir(new) == -1)
+	else if (chdir(new) == -1)
 	{
 		perror("Minishell");
 		return (1);
