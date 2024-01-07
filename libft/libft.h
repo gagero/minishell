@@ -38,6 +38,8 @@ int		ft_isascii(int c);
 
 int		ft_isprint(int c);
 
+int		ft_isspace(int c);
+
 size_t	ft_strlen(const char *s);
 
 int		ft_strncmp(const char *s1, const char *s2, size_t n);
@@ -102,6 +104,7 @@ typedef struct s_list
 {
 	void			*content;
 	struct s_list	*next;
+	struct s_list	*prev;
 }	t_list;
 
 t_list	*ft_lstnew(void *content);
@@ -121,6 +124,14 @@ void	ft_lstclear(t_list **lst, void (*del)(void *));
 void	ft_lstiter(t_list *lst, void (*f)(void *));
 
 t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *));
+
+const t_list	*ft_lstindex(const t_list	*lst, const int i);
+
+t_list	*ft_lstinsert(t_list	*lst, t_list *n, const int pos);
+
+t_list	**ft_lstpred(bool (*pred)(bool, t_list *), bool expr, t_list *lst);
+
+void	ft_lstdelone_reattach(t_list **lst, void (*f)(void *));
 
 char	*get_next_line(int fd);
 

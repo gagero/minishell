@@ -107,12 +107,17 @@ static void child_init(void)
 	signal(SIGQUIT, SIG_DFL);
 }
 
-static void	run_command(char **command, int input, int output, int *status, char **environment)
+static pid_t	run_command(char **command, int input, int output, char **environment)
 {
 	char	*err_str;
+	pid_t	ret;
+	int		i;
 
-	g_running_process = fork();
-	if (g_running_process == 0)
+	i = 0;
+	while(g_running_processes[i])
+		i++;
+	g_running_processes[i]	= fork();
+	if (ret == 0)
 	{
 		child_init();
 		if (input != STDIN_FILENO)
@@ -133,23 +138,39 @@ static void	run_command(char **command, int input, int output, int *status, char
 			exit(1);
 		}
 	}
-	if (g_running_process < 0)
+	if (ret < 0)
 		perror("Minishell: fork error");
-	else
-	{
-		waitpid(g_running_process, status, 0);
-		g_running_process = 0;
-	}
+	g_running_processes[i] = 0;
 	if (input != STDIN_FILENO)
 		close(input);
 	if (output != STDOUT_FILENO)
 		close(output);
+	return (ret);
+}
+
+int	wait_en_masse(void)
+{
+	int	i;
+	int	status;
+
+	i = 0;
+	while (g_running_processes[i])
+	{
+		waitpid(g_running_processes[i], &status, 0);
+		if (WIFEXITED(status))
+			status = WEXITSTATUS(status);
+		i++;
+	}
+	return (status);
 }
 
 int	execute(char **command, int input, int output, int *status, char **environment)
 {
-	if (command && is_builtin(command[0]))
-		return (builtin(command));
+	int	i;
+
+	// TODO: place into parser
+	/* if (command && is_builtin(command[0])) */
+	/* 	return (builtin(command)); */
 	command[0] = find_command_path(command[0]);
 	if (command[0] == NULL)
 	{
@@ -157,8 +178,11 @@ int	execute(char **command, int input, int output, int *status, char **environme
 		perror("Minishell");
 		return (1);
 	}
-	run_command(command, input, output, status, environment);
-	if (g_running_process < 0)
+	run_command(command, input, output, environment);
+	i = 0;
+	while (g_running_processes[i])
+		i++;
+	if (g_running_processes[i] < 0)
 		return (1);
 	free2d(command, true);
 	return (0);

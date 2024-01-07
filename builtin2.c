@@ -7,7 +7,7 @@
 #include "builtin.h"
 
 // Adds to __environ if is_export is true, otherwise returns a copy with the variable added
-char **putenviron(char *name, char *value, bool is_export)
+char **putenviron(char *name, char *value, bool is_export, char ***last_environ)
 {
 	static int		env_len;
 	char			**new_environ;
@@ -36,18 +36,11 @@ char **putenviron(char *name, char *value, bool is_export)
 	new_environ[env_len] = NULL;
 	if (is_export)
 	{
-		free(g_last_environ);
-		g_last_environ = __environ;
+		free(*last_environ);
+		*last_environ = __environ;
 		__environ = new_environ;
 	}
 	return (new_environ);
-}
-
-int	export(char *name, char *value)
-{
-	if (putenviron(name, value, true) == NULL)
-		return (1);
-	return (0);
 }
 
 int	unset(char *name, char **old)

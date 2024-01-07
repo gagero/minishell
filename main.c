@@ -3,37 +3,44 @@
 #include <readline/history.h>
 #include "libft/libft.h"
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
 #include "builtin.h"
 #include <termios.h>
 #include <fcntl.h>
+#include "lexer.h"
+#include "debug.h"
 
-char	**g_last_environ = NULL;
-int		g_last_proc_code = 0;
-pid_t	g_running_process = 0;
+// TODO: fix linked list functions
 
-// proof of concept, need to implement other signals
+int loop(void);
+
+pid_t	*g_running_processes = NULL;
+
 void generic_sig_handler(int sig)
 {
-	if (g_running_process > 0) // TODO: don't use a global variable? (would need to establish signal disposition in run_command())
+	int	status;
+	int	i;
+
+	i = 0;
+	while (g_running_processes[i])
 	{
-		kill(g_running_process, sig);
-		return ;
+		waitpid(g_running_processes[i], &status, WNOHANG);
+		if (!WIFEXITED(status))
+			kill(g_running_processes[i], sig);
+		i++;
 	}
 	if (sig == SIGINT)
 	{
-		ft_printf("\n");
-		rl_on_new_line();
-		rl_replace_line("", 1);
-		rl_redisplay();
+		/* ft_printf("\n"); */
+		/* rl_on_new_line(); */
+		/* rl_replace_line("", 1); */
+		/* rl_redisplay(); */
+		loop();
 	}
 	if (sig == SIGQUIT)
-	{
-		rl_replace_line("", 1);
-		rl_redisplay();
-		return ;
-	}
+		;
 }
 
 inline static void init_error(bool expr)
@@ -45,40 +52,67 @@ inline static void init_error(bool expr)
 	}
 }
 
-inline static void init(void)
+inline static char **init(int reinit, char ***last_environ)
 {
 	struct sigaction	sa;
 	struct termios		current;
 	int					tty_fd;
 
 	sa.sa_handler = generic_sig_handler;
-	sa.sa_flags = SA_RESTART; // use SA_SIGINFO as well?
+	sa.sa_flags = SA_RESTART;
 	init_error(sigaction(SIGINT, &sa, NULL) == -1);
-	init_error(tcgetattr(0, &current) == -1);
-	tty_fd = open(ttyname(0), O_RDONLY);
-	current.c_lflag |= ISIG;
-	init_error(tcsetattr(tty_fd, TCSANOW, &current) == -1);
-	init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
-	close(tty_fd);
+	if (reinit == 0)
+	{
+		*last_environ = NULL;
+		init_error(tcgetattr(0, &current) == -1);
+		tty_fd = open(ttyname(0), O_RDONLY);
+		current.c_lflag |= ISIG;
+		init_error(tcsetattr(tty_fd, TCSANOW, &current) == -1);
+		init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
+		close(tty_fd);
+		init_error(chdir(getenv("HOME")) == -1);
+	}
 }
 
-int main(void)
+// TODO: error messages
+int check_syntax(char *text)
 {
+	int	eq_count;
+	char	*eq;
+
+	eq_count = 0;
+	eq = ft_strchr(text, '=');
+	while (eq)
+	{
+		eq_count++;
+		if (eq == text || !ft_isalpha(eq[1]) || !ft_isalpha(*(eq - 1)))
+			return (1);
+		text = eq;
+	}
+	if (eq_count > 1)
+		return (1);
+	return (0);
+}
+
+int loop(void)
+{
+	char	*cwd;
+	t_list	*lexed;
 	char	*command;
 	char	*prompt;
-	char	**split;
-	char	*cwd;
+	char	**last_environ;
+	static int	runs;
 
-	init();
-	if (chdir(getenv("HOME")) == -1)
-	{
-		perror("Minishell: init error");
-		return (1);
-	}
+	runs++;
+	if (runs > 1)
+		init(1, &last_environ);
+	else
+		init(0, &last_environ);
+
 	while (1)
 	{
-		cwd = getcwd(NULL, 0); // cosmetic, leaks
-		prompt = ft_strjoin(cwd, "> "); // leaks
+		cwd = getcwd(NULL, 0);
+		prompt = ft_strjoin(cwd, "> ");
 		command = readline(prompt);
 		if (!command)
 		{
@@ -90,19 +124,21 @@ int main(void)
 		add_history(command);
 		free(cwd);
 		free(prompt);
-		/*
-		This if is necessary, as substitute() operates on the input string, not tokens.
-		The rest of main from this point forward is for testing and showcasing (although most of it will likely stay), as they will operate on tokens in some way.
-		The split variable can be treated as a stand-in for tokens.
-		*/
-		if (ft_strchr(command, '$'))
-		{
-			command = substitute(command);
-			if (!command)
-				exit_shell();
-		}
-		split = ft_split(command, ' '); // leaks
-		execute(split, STDIN_FILENO, STDOUT_FILENO, &g_last_proc_code, NULL);
+		if (!check_syntax(command))
+			exit(EXIT_SUCCESS);
+		// testing
+		// TODO: rework with tokens
+		lexed = lexer(command, last_environ);
+		g_running_processes = ft_calloc((ft_lstsize(lexed) + 1) * sizeof(pid_t));
+		// for testing
+		ft_lstiter(lexed, print_type);
+		// parse()
+		/* wait_en_masse(); */
 		free(command);
 	}
+}
+
+int main(void)
+{
+	loop();
 }

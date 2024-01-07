@@ -39,8 +39,7 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 	return (free(string), free2d(components, true), ret);
 }
 
-// filter for envvars
-char	*substitute(char *buf)
+char	*substitute(char *buf, int proc_code)
 {
 	char	*dollar_ptr;
 	char	*word_end;
@@ -60,7 +59,7 @@ char	*substitute(char *buf)
 	if (strcmp(name, "$?") != 0)
 		dollar_ptr = substitute_into_string(buf, name, replacement);
 	else
-		dollar_ptr = substitute_into_string(buf, name, ft_itoa(g_last_proc_code));
+		dollar_ptr = substitute_into_string(buf, name, ft_itoa(proc_code));
 	free(name);
 	free(replacement);
 	return (dollar_ptr);

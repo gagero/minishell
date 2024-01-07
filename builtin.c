@@ -47,7 +47,7 @@ int echo(char **command)
 			i = 2;
 			trim = true;
 		}
-		*to_print = 0;
+		to_print = NULL;
 		while(command[i])
 		{
 			to_print = ft_strjoin(to_print, command[i]);
@@ -80,27 +80,4 @@ void exit_shell(void)
 {
 	// TODO: free data
 	exit(0);
-}
-
-int builtin(char **command)
-{
-	if (ft_strncmp(command[0], "exit", 4) == 0)
-		return (exit_shell(), 0);
-	if (ft_strncmp(command[0], "pwd", 3) == 0)
-		return (pwd());
-	if (ft_strncmp(command[0], "cd", 2) == 0)
-	{
-		if (command + 1)
-			return (cd(command[1]));
-		return (cd(NULL));
-	}
-	if (ft_strncmp(command[0], "echo", 4) == 0)
-		return (echo(command));
-	if (ft_strncmp(command[0], "export", 6) == 0)
-		return (export(command[1], command[2]));
-	if (ft_strncmp(command[0], "unset", 5) == 0)
-		return (unset(command[1], __environ));
-	if (ft_strncmp(command[0], "env", 3) == 0)
-		return (env());
-	return (0);
 }

@@ -15,6 +15,7 @@
 void	ft_lstadd_front(t_list **lst, t_list *new)
 {
 	new->next = *lst;
+	new->prev = NULL;
 	*lst = new;
 }
 
@@ -29,6 +30,7 @@ void	ft_lstadd_back(t_list **lst, t_list *new)
 	else
 	{
 		tmp = ft_lstlast(*lst);
+		new->prev = tmp;
 		tmp->next = new;
 	}
 }
@@ -74,4 +76,23 @@ t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 	}
 	ret->next = NULL;
 	return (beg);
+}
+
+const t_list	*ft_lstindex(const t_list	*lst, const int i)
+{
+	int	j;
+
+	j = 0;
+	while (j < i)
+	{
+		if (lst)
+		{
+			if (lst->next)
+				lst = lst->next;
+			else
+				return (NULL);
+		}
+		j++;
+	}
+	return (lst);
 }

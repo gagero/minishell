@@ -1,10 +1,18 @@
-+ [ ] Lexer
-  + [ ] Watch for = sign in envvar assignments
-  + [ ] Pipes
-  + [ ] Redirections
-  + [ ] Quotes (both single and double)
++ [X] Lexer
+  + [X] Watch for = sign in envvar assignments
+  + [X] Pipes
+  + [X] Redirections
+  + [X] Quotes (both single and double)
 + [ ] Parser
+  + [ ] Expand envvar in non-quoted
+  + [ ] Process pipes in left-to-right order
+  + [ ] Process output/append redirections last
+  + [ ] Process input redirections/heredocs first
 + [ ] Establish order of operations
+  1. Prompt for heredocs in left-to-right order
+  2. Expand envvars
+  3. Pipes in left-to-right order
+  4. Redirections in left-to-right order
 + [ ] Redirections
   + Normal redirections should be handled by the run_command() function, probably just needs the parser done
   + [ ] Appends
@@ -12,24 +20,26 @@
   + [ ] Heredocs
     + [ ] Handle SIGINT
       + [ ] Add custom signal disposition before reading from stdin
-  + [ ] Permission check for writing to file
+  + [ ] Permission check for reading, writing and executing
 + [ ] Pipes
-  + Should be handled by the run_command() function, probably just needs the parser done
+  + Can be handled by the run_command() function, probably just needs the parser done
 + [X] Envvar substitution
   + [X] Fix segfault
 + [-] Signals
-  + [X] SIGINT
-  + [ ] SIGQUIT
-    + [ ] Prints "^\", potenially unfixable
+  + [ ] SIGINT
+    + [ ] Heredoc
+  + [X] SIGQUIT
+    + [X] Prints "^\"
+      + Needs termcap to fix
+      + Don't need to bother
 + [X] C-d
   + [X] Fix segfault
 + [X] History
-+ [ ] Prompt and reading
-  + [ ] Prompt is currently only absolute path, no home shortening, probably don't need to fix
++ [X] Prompt and reading
+  + [X] Prompt is currently only absolute path, no home shortening, probably don't need to fix
 + [X] Builtins
   + [X] Reworked echo
 + [ ] Memory leaks
-  + [ ] Split isn't freeing properly but it's only for testing
 
 + [-] Needs testing
   + [-] Builtins
@@ -38,10 +48,11 @@
     + [ ] pwd
     + [ ] env
     + [ ] export
-      + Currently only works in the form src_shell{export name value}, will be fixed by Lexer and Parser
+    + [ ] lexer
+    + [ ] parser
   + [ ] envvar substitution
     + [ ] Normal envvars
-    + [ ] Last process code (src_shell{$?})
+    + [ ] Last process code ($?)
 
 * Notes
 ** Don't forget to turn off the sanitizers (-fsanitize=address,leak,undefined in Makefile) when using valgrind
