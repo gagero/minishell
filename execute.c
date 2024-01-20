@@ -117,6 +117,7 @@ static pid_t	run_command(char **command, int input, int output, char **environme
 	while(g_running_processes[i])
 		i++;
 	g_running_processes[i]	= fork();
+	ret = g_running_processes[i];
 	if (ret == 0)
 	{
 		child_init();

@@ -15,6 +15,7 @@
 #include "ft_printf_internal.h"
 #include <limits.h>
 #include <stdlib.h>
+#include "libft.h"
 
 void	print_result(int i, char *result, struct s_print *print)
 {
@@ -117,7 +118,7 @@ void	ft_putnbr_base(int nbr, char *base, struct s_print *const print)
 {
 	struct s_args	*args;
 
-	args = malloc(sizeof(*args));
+	args = ft_calloc(sizeof(*args));
 	ft_putnbr_base_internal(nbr, base, print, *args);
 	free(args);
 }

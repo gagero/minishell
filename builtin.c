@@ -1,4 +1,3 @@
-#include "minishell.h"
 #include <stdbool.h>
 #include "libft/libft.h"
 #include <stdio.h>
@@ -27,6 +26,7 @@ int echo(char **command)
 	bool	trim;
 
 	i = 0;
+	trim = false;
 	while(command[i])
 		i++;
 	if (i == 1)
@@ -41,7 +41,6 @@ int echo(char **command)
 	else
 	{
 		i = 1;
-		trim = false;
 		if (ft_strncmp("-n", command[1], ft_strlen(command[1])) == 0)
 		{
 			i = 2;

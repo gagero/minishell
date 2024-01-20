@@ -29,6 +29,7 @@ static char	*trim(t_list *node)
 	char	*trimmed;
 	char	*end;
 
+	trimmed = NULL;
 	if ((uintptr_t)((t_type *)node->content)->word.word > (uintptr_t)4)
 	{
 		trimmed = ft_strdup(((t_type *)node->content)->word.word);
@@ -38,7 +39,8 @@ static char	*trim(t_list *node)
 		while (*end == ' ')
 			end--;
 	}
-	trimmed[end - trimmed] = 0;
+	if (trimmed)
+		trimmed[end - trimmed] = 0;
 	return (trimmed);
 }
 
