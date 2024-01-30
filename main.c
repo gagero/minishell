@@ -110,7 +110,6 @@ int loop(void)
 		init(1, &last_environ);
 	else
 		init(0, &last_environ);
-
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
