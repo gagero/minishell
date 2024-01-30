@@ -12,8 +12,6 @@
 #include "lexer.h"
 #include "debug.h"
 
-// TODO: fix linked list functions
-
 int loop(void);
 
 pid_t	*g_running_processes = NULL;
@@ -52,7 +50,7 @@ inline static void init_error(bool expr)
 	}
 }
 
-inline static char **init(int reinit, char ***last_environ)
+inline static void init(int reinit, char ***last_environ)
 {
 	struct sigaction	sa;
 	struct termios		current;
@@ -91,6 +89,10 @@ int check_syntax(char *text)
 	}
 	if (eq_count > 1)
 		return (1);
+	// TODO: quote checking
+	while (text++)
+		if (ft_isascii(*text))
+			return (1);
 	return (0);
 }
 
@@ -127,9 +129,8 @@ int loop(void)
 		if (!check_syntax(command))
 			exit(EXIT_SUCCESS);
 		// testing
-		// TODO: rework with tokens
 		lexed = lexer(command, last_environ);
-		g_running_processes = ft_calloc((ft_lstsize(lexed) + 1) * sizeof(pid_t));
+		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
 		// for testing
 		ft_lstiter(lexed, print_type);
 		// parse()

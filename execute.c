@@ -107,7 +107,7 @@ static void child_init(void)
 	signal(SIGQUIT, SIG_DFL);
 }
 
-static pid_t	run_command(char **command, int input, int output, char **environment)
+static pid_t	run_command(char **command, int input, int output)
 {
 	char	*err_str;
 	pid_t	ret;
@@ -130,7 +130,7 @@ static pid_t	run_command(char **command, int input, int output, char **environme
 			child_error((dup2(output, STDOUT_FILENO) < 0), errno);
 			close(output);
 		}
-		if (execve(command[0], command, environment) == -1)
+		if (execve(command[0], command, __environ) == -1)
 		{
 			err_str = ft_strjoin("Minishell: ", command[0]);
 			perror(err_str);
@@ -178,7 +178,7 @@ int	execute(char **command, int input, int output, int *status, char **environme
 		perror("Minishell");
 		return (1);
 	}
-	run_command(command, input, output, environment);
+	run_command(command, input, output);
 	i = 0;
 	while (g_running_processes[i])
 		i++;
