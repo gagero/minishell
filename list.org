@@ -4,10 +4,10 @@
   + [X] Redirections
   + [X] Quotes (both single and double)
 + [ ] Parser
-  + [ ] Expand envvar in non-quoted
+  + [ ] Expand envvars
+  + [ ] Process input redirections/heredocs
   + [ ] Process pipes in left-to-right order
-  + [ ] Process output/append redirections last
-  + [ ] Process input redirections/heredocs first
+  + [ ] Process output/append redirections
 + [ ] Establish order of operations
   1. Prompt for heredocs in left-to-right order
   2. Expand envvars
