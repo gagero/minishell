@@ -13,6 +13,7 @@
 #ifndef LIBFT_H
 # define LIBFT_H
 # include <stddef.h>
+# include <stdbool.h>
 
 enum	e_tag
 {

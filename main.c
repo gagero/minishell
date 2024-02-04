@@ -38,7 +38,7 @@ void generic_sig_handler(int sig)
 		loop();
 	}
 	if (sig == SIGQUIT)
-		;
+	{}
 }
 
 inline static void init_error(bool expr)

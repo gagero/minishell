@@ -116,7 +116,8 @@ static pid_t	run_command(char **command, int input, int output)
 	i = 0;
 	while(g_running_processes[i])
 		i++;
-	g_running_processes[i]	= fork();
+	ret = fork();
+	g_running_processes[i] = ret;
 	if (ret == 0)
 	{
 		child_init();
@@ -164,7 +165,7 @@ int	wait_en_masse(void)
 	return (status);
 }
 
-int	execute(char **command, int input, int output, int *status)
+int	execute(char **command, int input, int output)
 {
 	int	i;
 
