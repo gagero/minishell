@@ -39,15 +39,13 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 	return (free(string), free2d(components, true), ret);
 }
 
-char	*substitute(char *buf, int proc_code, int last_pos)
+char	*substitute(char *buf, int proc_code)
 {
 	char	*dollar_ptr;
 	char	*word_end;
 	char	*name;
 	char	*replacement;
 
-	if (last_pos >= 0)
-		buf += last_pos;
 	dollar_ptr = ft_strchr(buf, '$');
 	word_end = ft_strchr(dollar_ptr, ' ');
 	if (!word_end)
