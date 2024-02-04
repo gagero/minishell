@@ -164,7 +164,7 @@ int	wait_en_masse(void)
 	return (status);
 }
 
-int	execute(char **command, int input, int output, int *status, char **environment)
+int	execute(char **command, int input, int output, int *status)
 {
 	int	i;
 
