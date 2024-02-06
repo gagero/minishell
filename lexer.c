@@ -11,42 +11,47 @@ char	*extract_word(const char **str)
 
 	end = *str;
 	beg = *str;
-	if (**str != '"' && **str != '\'')
-		while (*end != '|' && *end != '>' && *end != '<')
+	if (**str && **str != '"' && **str != '\'')
+		while (*end && *end != '|' && *end != '>' && *end != '<' && *end != '\n')
 			end++;
 	else if (**str == '"')
-		while (*end != '"')
+		while (*end && *end != '"' && *end != '\n')
 			end++;
 	else if (**str == '\'')
-		while (*end != '\'')
+		while (*end && *end != '\'' && *end != '\n')
 			end++;
-	*str = end - 1;
-	return (ft_substr(beg, 0, end - beg /* - 1 */));
+	return (ft_substr(beg, 0, end - beg));
 }
 
-static char	*trim(t_list *node)
+// string made invalid here
+void	*trim(void *void_node)
 {
 	char	*trimmed;
 	char	*end;
+	t_type	*node;
 
-	if ((uintptr_t)((t_type *)node->content)->word.word > (uintptr_t)4)
+	node = void_node;
+	if ((uintptr_t)(node->word.word) > (uintptr_t)4)
 	{
-		trimmed = ft_strdup(((t_type *)node->content)->word.word);
-		end = trimmed + (ft_strlen(trimmed) - 1);
-		while (*trimmed == ' ')
+		trimmed = ft_strdup(node->word.word);
+		end = trimmed + ft_strlen(trimmed) - 1;
+		while (ft_isspace(*trimmed))
 			trimmed++;
-		while (*end == ' ')
+		while (ft_isspace(*end) && end > trimmed)
 			end--;
+		trimmed[end - trimmed + 1] = 0;
+		node->word.word = trimmed;
 	}
-	trimmed[end - trimmed] = 0;
-	return (trimmed);
+	return (node);
 }
 
-t_type	*tokenize(const char	*text)
+t_type	*tokenize(const char *text)
 {
 	t_type	*ret;
 
 	ret = malloc(sizeof(t_type));
+	if (!ret)
+		return (NULL);
 	if (*text == '|')
 		ret->redir = PIPE;
 	else if (*text == '>' && *(text + 1) == '>')
@@ -58,7 +63,10 @@ t_type	*tokenize(const char	*text)
 	else if (*text == '<' && *(text + 1) != '<')
 		ret->redir = INPUT;
 	else
+	{
+		ret->word.is_quoted = false;
 		ret->word.word = extract_word(&text);
+	}
 	return (ret);
 }
 
@@ -85,6 +93,29 @@ static void	env_assign(char **text, char ***last_environ)
 	}
 }
 
+static int next_special(char *text)
+{
+	long pipe;
+	long left;
+	long right;
+	int min;
+
+	pipe = ft_strchr(text, '|') - text;
+	left = ft_strchr(text, '<') - text;
+	right = ft_strchr(text, '>') - text;
+	if (pipe < left && pipe < right)
+		min = pipe;
+	else if (left < pipe && left < right)
+		min = left;
+	else if (right < pipe && right < left)
+		min = right;
+	else
+		min = 0;
+	if (min <= 0)
+		return (ft_strchr(text, '\0') - text);
+	return (min);
+}
+
 // TODO: test
 t_list	*lexer(char *text, char **last_environ)
 {
@@ -94,13 +125,16 @@ t_list	*lexer(char *text, char **last_environ)
 
 	len = 0;
 	env_assign(&text, &last_environ);
-	while (text)
+	ret = NULL;
+	while (text && *text)
 	{
 		ft_lstadd_back(&ret, ft_lstnew(tokenize(text)));
 		if (((t_type *)ft_lstlast(ret)->content)->redir == APPEND || ((t_type *)ft_lstlast(ret)->content)->redir == HEREDOC)
 			text += 2;
-		else
+		else if (((t_type *)ft_lstlast(ret)->content)->redir == OUTPUT || ((t_type *)ft_lstlast(ret)->content)->redir == INPUT || ((t_type *)ft_lstlast(ret)->content)->redir == PIPE)
 			text += 1;
+		else
+			text += next_special(text) /* + 1 */;
 		last = (t_list *)ft_lstindex(ret, len - 1);
 		if (((uintptr_t)((t_type *)last->content)) > (uintptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '"') == ((t_type *)last->content)->word.word)
 			quote_prompt(&ret, len - 1, true);
@@ -110,6 +144,7 @@ t_list	*lexer(char *text, char **last_environ)
 			pipe_prompt(&ret, len - 2);
 		len++;
 	}
-	ft_lstmap(ret, (void *(*)(void *))trim, free);
+	if (ret)
+		ret = ft_lstmap(ret, trim, free);
 	return (ret);
 }
