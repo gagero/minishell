@@ -6,8 +6,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include "parser.h"
-
-#define INITIAL_BUFFER_SIZE 10000
+#include <sys/ioctl.h>
 
 // TODO: break up into separate functions
 int	handle_input_redir(t_list *found, t_list *lexed, int pipefd[2])

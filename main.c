@@ -144,3 +144,13 @@ int main(void)
 {
 	loop();
 }
+
+int	error(bool expr, char *message)
+{
+	if (expr)
+	{
+		perror(message);
+		return (1);
+	}
+	return (0);
+}

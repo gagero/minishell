@@ -5,8 +5,9 @@
 #include "lexer.h"
 #include <fcntl.h>
 #include "parser.h"
+#include "minishell.h"
 
-static uintptr_t min(uintptr_t one, uintptr_t two)
+uintptr_t min(uintptr_t one, uintptr_t two)
 {
 	if (one < two && one)
 		return (one);
@@ -42,7 +43,7 @@ t_list	*ft_lstmap_redir(t_list *lst, t_type *(*f)(t_type *, enum redir), void (*
 	return (beg);
 }
 
-t_type	*is_elem(t_type *t, enum redir redir)
+t_type	*is_elem(t_type *t, const enum redir redir)
 {
 	if (t->redir == redir)
 		return (t);
@@ -50,7 +51,7 @@ t_type	*is_elem(t_type *t, enum redir redir)
 		return (NULL);
 }
 
-t_list *lexed_find(const t_list *lexed, enum redir elem)
+t_list *lexed_find(const t_list *lexed, const enum redir elem)
 {
 	lexed = ft_lstmap_redir((t_list *)lexed, is_elem, free, elem);
 	while (lexed && lexed->next)
@@ -59,7 +60,7 @@ t_list *lexed_find(const t_list *lexed, enum redir elem)
 		    break ;
 		lexed = lexed->next;
 	}
-	if (!lexed->content && !lexed->next)
+	if (!lexed->content)
 		return (NULL);
 	return ((t_list *)lexed);
 }
@@ -70,7 +71,7 @@ int parse(t_list *lexed)
 	int			ret;
 	int			pipefd[2];
 
-	/* lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // segfault */
+	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // segfault
 	if (!lexed)
 		return (1);
 	found = (t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)lexed_find(lexed, HEREDOC));
@@ -83,5 +84,13 @@ int parse(t_list *lexed)
 		if (ret)
 			return (1);
 	}
+	ret = process_pipes(lexed, pipefd);
+	if (error((ret == 1), "Pipe error"))
+		return (1);
+	ret = handle_output(lexed, pipefd);
+	if (ret == 2)
+		ft_printf("%s", pipefd[0]);
+	if (error((ret == 1), "output error"))
+		return (1);
 	return (0);
 }

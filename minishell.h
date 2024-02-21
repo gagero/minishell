@@ -10,4 +10,5 @@ int		execute(char **command, int input, int output);
 int		wait_en_masse(void);
 char	*substitute(const char *buf);
 int wait_for_proc(void);
+int	error(bool expr, char *message);
 #endif
