@@ -1,12 +1,10 @@
 #include <unistd.h>
 #include "libft/libft.h"
-#include "minishell.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include "lexer.h"
 #include <fcntl.h>
 #include "parser.h"
-#include <limits.h>
 
 static uintptr_t min(uintptr_t one, uintptr_t two)
 {
