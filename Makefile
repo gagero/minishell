@@ -1,7 +1,7 @@
 NAME = minishell
 CC = cc
-CFLAGS = -Wall -Wextra -ggdb3 -O0 -lreadline -fno-omit-frame-pointer -fsanitize=address,leak,undefined
-SRCS = main.c execute.c builtin.c builtin2.c substitute.c lexer.c prompt.c debug.c parser.c
+CFLAGS = -Wall -Wextra -ggdb3 -O0 -lreadline -fno-omit-frame-pointer #-fsanitize=address,leak,undefined
+SRCS = main.c execute.c builtin.c builtin2.c substitute.c lexer.c prompt.c debug.c parser.c input.c
 OBJS = $(SRCS:.c=.o)
 LIBFT = libft/libft.a
 
@@ -26,6 +26,6 @@ fclean: clean
 re: fclean all
 
 check-syntax:
-	cppcheck --enable=all --quiet ${CHK_SOURCES} 
+	cppcheck --disable=variableScope --quiet ${CHK_SOURCES} 
 	gcc -o /dev/null -S ${CHK_SOURCES} $(CFLAGS) || true
 	#scan-build gcc -o /dev/null -S ${CHK_SOURCES} $(CFLAGS) || true

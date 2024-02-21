@@ -155,6 +155,7 @@ int	wait_en_masse(void)
 	int	status;
 
 	i = 0;
+	status = 0;
 	while (g_running_processes[i])
 	{
 		waitpid(g_running_processes[i], &status, 0);

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 // TODO: test
 static char	*substitute_into_string(char *string, char *to_replace, char *replace_with)
@@ -39,7 +40,18 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 	return (free(string), free2d(components, true), ret);
 }
 
-char	*substitute(char *buf, int proc_code)
+int wait_for_proc(void)
+{
+	int	i;
+
+	i = 0;
+	while (!g_running_processes[i])
+		i++;
+	waitpid(g_running_processes[i], &i, 0);
+	return (i);
+}
+
+char	*substitute(const char *buf)
 {
 	char	*dollar_ptr;
 	char	*word_end;
@@ -59,7 +71,7 @@ char	*substitute(char *buf, int proc_code)
 	if (strcmp(name, "$?") != 0)
 		dollar_ptr = substitute_into_string(buf, name, replacement);
 	else
-		dollar_ptr = substitute_into_string(buf, name, ft_itoa(proc_code));
+		dollar_ptr = substitute_into_string(buf, name, ft_itoa(g_running_processes[wait_for_proc()]));
 	free(name);
 	free(replacement);
 	return (dollar_ptr);

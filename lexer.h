@@ -27,7 +27,7 @@ typedef union s_type
 t_type	*tokenize(const char *text);
 void	quote_prompt(t_list	**lexed, const int pos, const bool dquote);
 void	pipe_prompt(t_list	**lexed, const int pos);
-char	*heredoc_prompt(const char *const delim);
+char	*heredoc_prompt(const char *const delim, int *const len);
 t_list	*lexer(char *text, char **last_environ);
 
 #endif

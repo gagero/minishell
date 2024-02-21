@@ -118,7 +118,7 @@ void	ft_putnbr_base(int nbr, char *base, struct s_print *const print)
 {
 	struct s_args	*args;
 
-	args = ft_calloc(sizeof(*args));
+	args = ft_calloc(sizeof(*args), 1);
 	ft_putnbr_base_internal(nbr, base, print, *args);
 	free(args);
 }

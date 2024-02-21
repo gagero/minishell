@@ -3,9 +3,9 @@
   + [X] Pipes
   + [X] Redirections
   + [X] Quotes (both single and double)
-+ [ ] Parser
-  + [ ] Expand envvars
-  + [ ] Process input redirections/heredocs
++ [-] Parser
+  + [X] Expand envvars
+  + [X] Process input redirections/heredocs
   + [ ] Process pipes in left-to-right order
   + [ ] Process output/append redirections
 + [ ] Establish order of operations
@@ -50,6 +50,7 @@
     + [ ] export
     + [ ] lexer
     + [ ] parser
+      + Test with invalid syntax
   + [ ] envvar substitution
     + [ ] Normal envvars
     + [ ] Last process code ($?)

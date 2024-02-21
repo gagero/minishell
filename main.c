@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "minishell.h"
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -11,6 +12,7 @@
 #include <fcntl.h>
 #include "lexer.h"
 #include "debug.h"
+#include "parser.h"
 
 int loop(void);
 
@@ -130,9 +132,9 @@ int loop(void)
 		// testing
 		lexed = lexer(command, last_environ);
 		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
-		// for testing
-		ft_lstiter(lexed, print_type);
-		// parse()
+		/* // for testing */
+		/* ft_lstiter(lexed, print_type); */
+		parse(lexed);
 		/* wait_en_masse(); */
 		free(command);
 	}

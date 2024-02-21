@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <readline/readline.h>
 #include "libft/libft.h"
 #include "lexer.h"
@@ -82,7 +83,7 @@ void	quote_prompt(t_list	**lexed, const int pos, const bool dquote)
 	*lexed = ft_lstinsert(*lexed, ft_lstnew(insert), pos);
 }
 
-char	*heredoc_prompt(const char *const delim)
+char	*heredoc_prompt(const char *const delim, int *const len)
 {
 	char	*cmd;
 	char	*ret;
@@ -95,17 +96,25 @@ char	*heredoc_prompt(const char *const delim)
 	while (cmd)
 	{
 		cmd = readline("heredoc> ");
-		little = ft_strnstr(cmd, delim, ft_strlen(cmd));
+		*len = ft_strlen(cmd);
+		little = ft_strnstr(cmd, delim, *len);
 		if (little)
 		{
 			tmp = ft_substr(cmd, 0, little + ft_strlen(little) - cmd);
+			if (ret[0])
+				*len += ft_strlen(tmp);
+			else
+				*len = ft_strlen(tmp);
 			ft_strjoin(ret, tmp);
 			free(cmd);
 			free(tmp);
 			return (ret);
 		}
 		else
+		{
+			*len += ft_strlen(cmd);
 			ft_strjoin(ret, cmd);
+		}
 		free(cmd);
 	}
 	return (NULL);
