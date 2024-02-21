@@ -50,9 +50,17 @@ t_type	*is_elem(t_type *t, enum redir redir)
 		return (NULL);
 }
 
-t_list *lexed_find(const t_list *lexed, volatile enum redir elem)
+t_list *lexed_find(const t_list *lexed, enum redir elem)
 {
 	lexed = ft_lstmap_redir((t_list *)lexed, is_elem, free, elem);
+	while (lexed && lexed->next)
+	{
+		if (lexed->content != NULL)
+		    break ;
+		lexed = lexed->next;
+	}
+	if (!lexed->content && !lexed->next)
+		return (NULL);
 	return ((t_list *)lexed);
 }
 
