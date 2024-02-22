@@ -68,10 +68,10 @@ t_list *lexed_find(const t_list *lexed, const enum redir elem)
 int parse(t_list *lexed)
 {
 	t_list	*found;
-	int			ret;
+	intptr_t		ret;
 	int			pipefd[2];
 
-	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // segfault
+	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // FIXME: segfault
 	if (!lexed)
 		return (1);
 	found = (t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)lexed_find(lexed, HEREDOC));
@@ -81,12 +81,17 @@ int parse(t_list *lexed)
 	if (found)
 	{
 		ret = handle_input_redir(found, lexed, pipefd);
-		if (ret)
+		if (error((ret == 1), "redir error"))
 			return (1);
 	}
-	ret = process_pipes(lexed, pipefd);
-	if (error((ret == 1), "Pipe error"))
-		return (1);
+	else if ((lexed_find(lexed, PIPE)))
+	{
+		ret = process_pipes(lexed, pipefd);
+		if (ret == 2)
+			return (1);
+	}
+	else if (!lexed_find(lexed, OUTPUT) || !lexed_find(lexed, APPEND))
+		execute((char **)ret, pipefd[0], STDOUT_FILENO);
 	ret = handle_output(lexed, pipefd);
 	if (ret == 2)
 		ft_printf("%s", pipefd[0]);
