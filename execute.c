@@ -166,7 +166,7 @@ int	wait_en_masse(void)
 	return (status);
 }
 
-int	execute(char **command, int input, int output)
+int	execute(char **command, int input, int output) // FIXME: command is NULL
 {
 	int	i;
 

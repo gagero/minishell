@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <unistd.h>
 #include "libft/libft.h"
 #include <stdint.h>
@@ -6,8 +7,9 @@
 #include <fcntl.h>
 #include "parser.h"
 #include "minishell.h"
+#include <sys/ioctl.h>
 
-uintptr_t min(uintptr_t one, uintptr_t two)
+intptr_t min(uintptr_t one, uintptr_t two)
 {
 	if (one < two && one)
 		return (one);
@@ -70,8 +72,11 @@ int parse(t_list *lexed)
 	t_list	*found;
 	intptr_t		ret;
 	int			pipefd[2];
+	char			**c;
+	int			out;
 
-	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // FIXME: segfault
+	out = 1;
+	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // content pointer invalidated here
 	if (!lexed)
 		return (1);
 	found = (t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)lexed_find(lexed, HEREDOC));
@@ -91,10 +96,38 @@ int parse(t_list *lexed)
 			return (1);
 	}
 	else if (!lexed_find(lexed, OUTPUT) || !lexed_find(lexed, APPEND))
-		execute((char **)ret, pipefd[0], STDOUT_FILENO);
-	ret = handle_output(lexed, pipefd);
-	if (ret == 2)
-		ft_printf("%s", pipefd[0]);
+	{
+		if (((t_type *)lexed->content)->redir > 4)
+		{
+			c = ft_split(((t_type *)lexed->content)->word.word, ' ');
+			if (!c && write(STDERR_FILENO, "malloc error\n", 13))
+				return (1);
+			execute(c, pipefd[0], STDOUT_FILENO);
+		}
+		else
+		{
+			write(STDERR_FILENO, "Parse error: command not found\n", 31);
+			return (1);
+		}
+	}
+	else
+		out = handle_output(lexed, pipefd);
+	if (!out) // FIXME: proper outputting
+	{
+		ret = ioctl(pipefd[0], FIONREAD, &out);
+		c = malloc(sizeof(*c));
+		*c = malloc(out);
+		out = read(pipefd[0], *c, out);
+		if (error((out == -1), "pipe error"))
+		{
+			free(*c);
+			free(c);
+			return (1);
+		}
+		ft_printf("%s", *c);
+		free(*c);
+		free(c);
+	}
 	if (error((ret == 1), "output error"))
 		return (1);
 	return (0);

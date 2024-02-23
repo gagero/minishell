@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include "libft/libft.h"
 #include "minishell.h"
 #include <stdlib.h>
@@ -51,28 +52,38 @@ int wait_for_proc(void)
 	return (i);
 }
 
-char	*substitute(const char *buf)
+t_type *substitute(const t_type *buf)
 {
-	char	*dollar_ptr;
-	char	*word_end;
-	char	*name;
-	char	*replacement;
+	char		*dollar_ptr;
+	char		*name;
+	char		*replacement;
+	t_type	*ret;
 
-	dollar_ptr = ft_strchr(buf, '$');
-	word_end = ft_strchr(dollar_ptr, ' ');
-	if (!word_end)
-		word_end = dollar_ptr + ft_strlen(dollar_ptr);
-	name = ft_substr(dollar_ptr, 1, word_end - dollar_ptr);
+	ret = malloc(sizeof(t_type));
+	ret->word.is_quoted = buf->word.is_quoted;
+	if (buf->redir <= 4)
+	{
+		ret->redir = buf->redir;
+		return (ret);
+	}
+	dollar_ptr = ft_strchr(buf->word.word, '$');
+	if (!dollar_ptr)
+		{
+			ret->word.word = buf->word.word;
+			return (ret);
+		}
+	name = ft_substr(dollar_ptr, 1, buf->word.word + ft_strlen(buf->word.word) - dollar_ptr);
 	if (!name)
 		return (NULL);
 	replacement = getenv(name);
 	if (!replacement)
 		replacement = ft_strdup("\n");
 	if (strcmp(name, "$?") != 0)
-		dollar_ptr = substitute_into_string(buf, name, replacement);
+		dollar_ptr = substitute_into_string(buf->word.word, name, replacement);
 	else
-		dollar_ptr = substitute_into_string(buf, name, ft_itoa(g_running_processes[wait_for_proc()]));
+		dollar_ptr = substitute_into_string(buf->word.word, name, ft_itoa(g_running_processes[wait_for_proc()]));
 	free(name);
 	free(replacement);
-	return (dollar_ptr);
+	ret->word.word = dollar_ptr;
+	return (ret);
 }

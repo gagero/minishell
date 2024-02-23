@@ -35,7 +35,7 @@ intptr_t	handle_input_redir(t_list *found, t_list *lexed, int pipefd[2])
 	}
 	else if (((t_type *)found->content)->redir == HEREDOC)
 	{
-		if (((uintptr_t)((t_type *)found->next->content)->word.word) > 4)
+		if (((intptr_t)((t_type *)found->next->content)->word.word) > 4)
 		{
 			copy = heredoc_prompt(((t_type *)found->next->content)->word.word, &total_bytes_read);
 			read(pipefd[0], copy, ft_strlen(copy));
@@ -48,5 +48,5 @@ intptr_t	handle_input_redir(t_list *found, t_list *lexed, int pipefd[2])
 	split = ft_split(((t_type *)found->prev->content)->word.word, ' ');
 	if (error((!split), "malloc error"))
 		return (1);
-	return ((uintptr_t)split);
+	return ((intptr_t)split);
 }
