@@ -28,8 +28,8 @@ int process_pipes(t_list *lexed, int pipefd[2])
 			break ;
 		cmds[0] = ft_split(((t_type *)found->prev->content)->word.word, ' ');
 		cmds[1] = ft_split(((t_type *)found->next->content)->word.word, ' ');
-		execute(cmds[0], pipefd[0], internal_pipefd[1]);
-		execute(cmds[1], internal_pipefd[0], internal_pipefd[1]);
+		execute(cmds[0], pipefd[0], internal_pipefd[1]); // TODO: get return value and do error handling
+		execute(cmds[1], internal_pipefd[0], internal_pipefd[1]); // TODO: get return value and do error handling
 		free(cmds[0]);
 		free(cmds[1]);
 		i++;

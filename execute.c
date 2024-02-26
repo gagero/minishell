@@ -170,9 +170,9 @@ int	execute(char **command, int input, int output) // FIXME: command is NULL
 {
 	int	i;
 
-	// TODO: place into parser
-	/* if (command && is_builtin(command[0])) */
-	/* 	return (builtin(command)); */
+	/* TODO: place into parser */
+	if (command && is_builtin(command[0]))
+		return (builtin(command));
 	command[0] = find_command_path(command[0]);
 	if (command[0] == NULL)
 	{

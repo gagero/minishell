@@ -3,10 +3,13 @@
   + [X] Pipes
   + [X] Redirections
   + [X] Quotes (both single and double)
+    * [ ] prompts
 + [-] Parser
   + [X] Expand envvars
   + [X] Process input redirections/heredocs
+    * [ ] prompts 
   + [ ] Process pipes in left-to-right order
+    * [ ] prompts
   + [ ] Process output/append redirections
 + [ ] Establish order of operations
   1. Prompt for heredocs in left-to-right order
@@ -58,3 +61,8 @@
 * Notes
 ** Don't forget to turn off the sanitizers (-fsanitize=address,leak,undefined in Makefile) when using valgrind
 ** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
+
+* Failing testcases
+	| |
+	no prompts (I forgot about them)
+need to test quotes

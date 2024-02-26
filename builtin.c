@@ -80,3 +80,19 @@ void exit_shell(void)
 	// TODO: free data
 	exit(0);
 }
+
+int builtin(char **command)
+{
+	if (!ft_strncmp(command[0], "exit", 4))
+		exit_shell();
+	else if (!ft_strncmp(command[0], "pwd", 3))
+		pwd();
+	else if (!ft_strncmp(command[0], "cd", 2))
+		cd(command[1]);
+	else if (!ft_strncmp(command[0], "env", 3))
+		env();
+	// TODO: rest of the builtins
+	else
+		return (1);
+	return (0);
+}

@@ -24,7 +24,7 @@ void generic_sig_handler(int sig)
 	int	i;
 
 	i = 0;
-	while (g_running_processes[i])
+	while (g_running_processes[i]) // null
 	{
 		waitpid(g_running_processes[i], &status, WNOHANG);
 		if (!WIFEXITED(status))
@@ -33,11 +33,11 @@ void generic_sig_handler(int sig)
 	}
 	if (sig == SIGINT)
 	{
-		/* ft_printf("\n"); */
-		/* rl_on_new_line(); */
-		/* rl_replace_line("", 1); */
-		/* rl_redisplay(); */
-		loop();
+		ft_printf("\n");
+		rl_on_new_line();
+		rl_replace_line("", 1);
+		rl_redisplay();
+		/* loop(); */
 	}
 	if (sig == SIGQUIT)
 	{}
@@ -115,6 +115,8 @@ int loop(void)
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
+		g_running_processes = malloc(sizeof(pid_t));
+		g_running_processes[0] = 0;
 		prompt = ft_strjoin(cwd, "> ");
 		command = readline(prompt);
 		if (!command)
@@ -131,11 +133,10 @@ int loop(void)
 			exit(EXIT_SUCCESS);
 		// testing
 		lexed = lexer(command, last_environ);
+		free(g_running_processes);
 		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
-		/* // for testing */
-		/* ft_lstiter(lexed, print_type); */
 		parse(lexed);
-		/* wait_en_masse(); */
+		wait_en_masse();
 		free(command);
 	}
 }

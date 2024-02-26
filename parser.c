@@ -102,7 +102,7 @@ int parse(t_list *lexed)
 			c = ft_split(((t_type *)lexed->content)->word.word, ' ');
 			if (!c && write(STDERR_FILENO, "malloc error\n", 13))
 				return (1);
-			execute(c, pipefd[0], STDOUT_FILENO);
+			execute(c, pipefd[0], STDOUT_FILENO); // TODO: get return value and do error handling
 		}
 		else
 		{

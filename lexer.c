@@ -136,9 +136,9 @@ t_list	*lexer(char *text, char **last_environ)
 		else
 			text += next_special(text) /* + 1 */;
 		last = (t_list *)ft_lstindex(ret, len - 1);
-		if (((intptr_t)((t_type *)last->content)) > (intptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '"') == ((t_type *)last->content)->word.word)
+		if (((uintptr_t)((t_type *)last->content)) > (uintptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '"') == ((t_type *)last->content)->word.word)
 			quote_prompt(&ret, len - 1, true);
-		if (((intptr_t)((t_type *)last->content)) > (intptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '\'') == ((t_type *)last->content)->word.word)
+		if (((uintptr_t)((t_type *)last->content)) > (uintptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '\'') == ((t_type *)last->content)->word.word)
 			quote_prompt(&ret, len - 1, false);
 		if (((t_type *)last->content)->redir == PIPE && ((t_type *)last->prev->content)->redir == PIPE)
 			pipe_prompt(&ret, len - 2);
