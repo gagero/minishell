@@ -26,7 +26,7 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 	while (end_ptr)
 	{
 		components[i] = ft_substr(string, beg_ptr - string, end_ptr - string /* - 1*/);
-		if (!components[i++])
+		if (!components[i++]) // FIXME: components segfaults
 			return (NULL);
 		beg_ptr += ft_strlen(to_replace) + (end_ptr - string /* - 1*/);
 		end_ptr = ft_strnstr(beg_ptr, to_replace, ft_strlen(string));
@@ -60,12 +60,12 @@ t_type *substitute(const t_type *buf)
 	t_type	*ret;
 
 	ret = malloc(sizeof(t_type));
-	ret->word.is_quoted = buf->word.is_quoted;
 	if (buf->redir <= 4)
 	{
 		ret->redir = buf->redir;
 		return (ret);
 	}
+	ret->word.is_quoted = buf->word.is_quoted;
 	dollar_ptr = ft_strchr(buf->word.word, '$');
 	if (!dollar_ptr)
 		{

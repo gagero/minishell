@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "libft/libft.h"
@@ -95,14 +96,26 @@ static void	env_assign(char **text, char ***last_environ)
 
 static int next_special(char *text)
 {
-	long pipe;
-	long left;
-	long right;
+	intptr_t pipe;
+	intptr_t left;
+	intptr_t right;
 	int min;
 
-	pipe = ft_strchr(text, '|') - text;
-	left = ft_strchr(text, '<') - text;
-	right = ft_strchr(text, '>') - text;
+	pipe = (intptr_t)ft_strchr(text, '|');
+	left = (intptr_t)ft_strchr(text, '<');
+	right = (intptr_t)ft_strchr(text, '>');
+	if (!pipe)
+		pipe = INTPTR_MAX;
+	else
+		pipe -= (intptr_t)text;
+	if (!left)
+		left = INTPTR_MAX;
+	else
+		left -= (intptr_t)text;
+	if (!right)
+		right = INTPTR_MAX;
+	else
+		right -= (intptr_t)text;
 	if (pipe < left && pipe < right)
 		min = pipe;
 	else if (left < pipe && left < right)
@@ -120,10 +133,7 @@ static int next_special(char *text)
 t_list	*lexer(char *text, char **last_environ)
 {
 	t_list 			*ret;
-	unsigned int	len;
-	t_list			*last;
 
-	len = 0;
 	env_assign(&text, &last_environ);
 	ret = NULL;
 	while (text && *text)
@@ -135,15 +145,9 @@ t_list	*lexer(char *text, char **last_environ)
 			text += 1;
 		else
 			text += next_special(text) /* + 1 */;
-		last = (t_list *)ft_lstindex(ret, len - 1);
-		if (((uintptr_t)((t_type *)last->content)) > (uintptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '"') == ((t_type *)last->content)->word.word)
-			quote_prompt(&ret, len - 1, true);
-		if (((uintptr_t)((t_type *)last->content)) > (uintptr_t)4 && ft_strrchr(((t_type *)last->content)->word.word, '\'') == ((t_type *)last->content)->word.word)
-			quote_prompt(&ret, len - 1, false);
-		if (((t_type *)last->content)->redir == PIPE && ((t_type *)last->prev->content)->redir == PIPE)
-			pipe_prompt(&ret, len - 2);
-		len++;
 	}
+	if (((t_type *)ft_lstlast(ret)->content)->redir == PIPE)
+			pipe_prompt(&ret);
 	if (ret)
 		ret = ft_lstmap(ret, trim, free);
 	return (ret);

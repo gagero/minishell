@@ -1,17 +1,18 @@
-+ [X] Lexer
++ [-] Lexer
   + [X] Watch for = sign in envvar assignments
   + [X] Pipes
   + [X] Redirections
-  + [X] Quotes (both single and double)
+  + [ ] Quotes (both single and double)
+    * [ ] expand only in double
     * [ ] prompts
 + [-] Parser
   + [X] Expand envvars
-  + [X] Process input redirections/heredocs
+  + [ ] Process input redirections/heredocs
     * [ ] prompts 
   + [ ] Process pipes in left-to-right order
     * [ ] prompts
-  + [ ] Process output/append redirections
-+ [ ] Establish order of operations
+  + [X] Process output/append redirections
++ [X] Establish order of operations
   1. Prompt for heredocs in left-to-right order
   2. Expand envvars
   3. Pipes in left-to-right order
@@ -24,10 +25,9 @@
     + [ ] Handle SIGINT
       + [ ] Add custom signal disposition before reading from stdin
   + [ ] Permission check for reading, writing and executing
-+ [ ] Pipes
++ [X] Pipes
   + Can be handled by the run_command() function, probably just needs the parser done
-+ [X] Envvar substitution
-  + [X] Fix segfault
++ [ ] Envvar substitution
 + [-] Signals
   + [ ] SIGINT
     + [ ] Heredoc
@@ -63,6 +63,7 @@
 ** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
 
 * Failing testcases
-	| |
-	no prompts (I forgot about them)
-need to test quotes
+	* | |
+	* no prompts (I forgot about them)
+***** need to test quotes
+* REPLACE GCC WITH CC

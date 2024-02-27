@@ -15,7 +15,7 @@ int handle_output(t_list *lexed, int pipefd[2])
 	int			size;
 	char		*buf;
 
-	found = (t_list *)min((intptr_t)lexed_find(lexed, APPEND), (uintptr_t)lexed_find(found, OUTPUT));
+	found = (t_list *)min((intptr_t)lexed_find(lexed, APPEND), (uintptr_t)lexed_find(lexed, OUTPUT));
 	if (!found)
 		return (2);
 	if (((t_type *)found->content)->redir == OUTPUT)

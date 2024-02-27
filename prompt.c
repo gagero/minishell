@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <readline/readline.h>
+#include "builtin.h"
 #include "libft/libft.h"
 #include "lexer.h"
 #include <stdlib.h>
@@ -7,80 +8,17 @@
 
 // FIXME: this whole thing is bad
 
-void	pipe_prompt(t_list	**lexed, int pos)
+void	pipe_prompt(t_list	**lexed)
 {
 	char	*cmd;
 	t_type	*insert;
-	char	*end;
 
 	insert = malloc(sizeof(t_type));
 	cmd = readline("pipe> ");
-	if (cmd)
-	{
-		end = cmd + ft_strlen(cmd) - 1;
-		while (*end == ' ')
-			end--;
-		if (*end == '|')
-		{
-			pipe_prompt(lexed, pos);
-			pos++;
-		}
-		insert = tokenize(cmd);
-		*lexed = ft_lstinsert(*lexed, ft_lstnew(insert), pos);
-	}
-}
-
-static char	*ft_strjoin_free(char *s1, char const *s2)
-{
-	char	*ret;
-	int		i;
-	int		j;
-
-	if (!s1 || !s2)
-		return (NULL);
-	ret = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
-	if (!ret)
-		return (NULL);
-	i = 0;
-	while (s1[i])
-	{
-		ret[i] = s1[i];
-		i++;
-	}
-	j = 0;
-	while (s2[j])
-	{
-		ret[i + j] = s2[j];
-		j++;
-	}
-	ret[i + j] = '\0';
-	free(s1);
-	return (ret);
-}
-
-void	quote_prompt(t_list	**lexed, const int pos, const bool dquote)
-{
-	char	*cmd;
-	t_type	*insert;
-	char	*full_cmd;
-
-	insert = malloc(sizeof(t_type));
-	full_cmd = "";
-	if (dquote)
-		while (!ft_strchr(full_cmd, '"'))
-		{
-			cmd = readline("dquote> ");
-			full_cmd = ft_strjoin_free(full_cmd, cmd);
-		}
-	else
-		while (!ft_strchr(full_cmd, '\''))
-		{
-			cmd = readline("quote> ");
-			full_cmd = ft_strjoin_free(full_cmd, cmd);
-		}
-	insert->word.word = full_cmd;
-	insert->word.is_quoted = true;
-	*lexed = ft_lstinsert(*lexed, ft_lstnew(insert), pos);
+	if (!cmd)
+		exit_shell();
+	insert = tokenize(cmd);
+	ft_lstadd_back(lexed, ft_lstnew(insert));
 }
 
 char	*heredoc_prompt(const char *const delim, int *const len)

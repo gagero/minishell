@@ -8,7 +8,7 @@
 
 int process_pipes(t_list *lexed, int pipefd[2])
 {
-	t_list	*found;
+	t_list	*found; // no symbol?
 	int			internal_pipefd[2];
 	int			ret;
 	char		*output;
@@ -26,10 +26,16 @@ int process_pipes(t_list *lexed, int pipefd[2])
 		found = lexed_find(found, PIPE);
 		if (!found)
 			break ;
-		cmds[0] = ft_split(((t_type *)found->prev->content)->word.word, ' ');
+		if (!found->prev)
+			return (write(2, "syntax error\n", 13), 1);
+		cmds[0] = ft_split(((t_type *)found->prev->content)->word.word, ' '); // FIXME: segfaults, no prev? can't get debug symbols
 		cmds[1] = ft_split(((t_type *)found->next->content)->word.word, ' ');
-		execute(cmds[0], pipefd[0], internal_pipefd[1]); // TODO: get return value and do error handling
-		execute(cmds[1], internal_pipefd[0], internal_pipefd[1]); // TODO: get return value and do error handling
+		ret = execute(cmds[0], pipefd[0], internal_pipefd[1]);
+		if (ret)
+			return (write(2, "execution error\n", 16), 1);
+		ret = execute(cmds[1], internal_pipefd[0], internal_pipefd[1]);
+		if (ret)
+			return (write(2, "execution error\n", 16), 1);
 		free(cmds[0]);
 		free(cmds[1]);
 		i++;
@@ -45,7 +51,7 @@ int process_pipes(t_list *lexed, int pipefd[2])
 		}
 		read(internal_pipefd[0], output, size); // TODO: check if nul-terminated
 		write(pipefd[1], output, size);
-		if (error((ret == -1), "Pipe error"))
+		if (error((ret == -1), "pipe error"))
 			return (1);
 	}
 	return (0);

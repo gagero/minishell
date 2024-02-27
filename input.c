@@ -9,7 +9,7 @@
 #include <sys/ioctl.h>
 
 // TODO: break up into separate functions
-intptr_t	handle_input_redir(t_list *found, t_list *lexed, int pipefd[2])
+intptr_t	handle_input_redir(t_list *found, int pipefd[2])
 {
 	int		fd;
 	char	*copy;

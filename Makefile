@@ -1,5 +1,5 @@
 NAME = minishell
-CC = cc
+CC = gcc
 CFLAGS = -Wall -Wextra -g3 -O0 -lreadline -fno-omit-frame-pointer -fsanitize=address,leak,undefined
 SRCS = main.c execute.c builtin.c builtin2.c substitute.c lexer.c prompt.c debug.c parser.c input.c pipe.c output.c
 OBJS = $(SRCS:.c=.o)

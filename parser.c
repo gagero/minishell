@@ -32,7 +32,7 @@ t_list	*ft_lstmap_redir(t_list *lst, t_type *(*f)(t_type *, enum redir), void (*
 	lst = lst->next;
 	while (lst != NULL)
 	{
-		ret->next = ft_lstnew(f(lst->content, redir));
+		ft_lstadd_back(&ret, ft_lstnew(f(lst->content, redir)));
 		if (ret->next == NULL)
 		{
 			ft_lstclear(&beg, del);
@@ -75,17 +75,19 @@ int parse(t_list *lexed)
 	char			**c;
 	int			out;
 
-	out = 1;
-	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // content pointer invalidated here
+	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // do prev pointers get created here?
 	if (!lexed)
 		return (1);
+	if (ft_lstsize(lexed) > 2 && ((t_type *)ft_lstlast(lexed)->prev->content)->redir == HEREDOC)
+		heredoc_prompt(((t_type *)ft_lstlast(lexed)->content)->word.word, &out);
+	out = 1;
 	found = (t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)lexed_find(lexed, HEREDOC));
 	ret = pipe(pipefd);
 	if (ret)
 		return (1);
 	if (found)
 	{
-		ret = handle_input_redir(found, lexed, pipefd);
+		ret = handle_input_redir(found, pipefd);
 		if (error((ret == 1), "redir error"))
 			return (1);
 	}
