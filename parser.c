@@ -18,33 +18,6 @@ intptr_t min(uintptr_t one, uintptr_t two)
 	return (0);
 }
 
-t_list	*ft_lstmap_redir(t_list *lst, t_type *(*f)(t_type *, enum redir), void (*del)(void *), const enum redir redir)
-{
-	t_list	*ret;
-	t_list	*beg;
-
-	if (lst == NULL)
-		return (NULL);
-	ret = ft_lstnew(f(lst->content, redir));
-	if (ret == NULL)
-		return (NULL);
-	beg = ret;
-	lst = lst->next;
-	while (lst != NULL)
-	{
-		ft_lstadd_back(&ret, ft_lstnew(f(lst->content, redir)));
-		if (ret->next == NULL)
-		{
-			ft_lstclear(&beg, del);
-			return (NULL);
-		}
-		lst = lst->next;
-		ret = ret->next;
-	}
-	ret->next = NULL;
-	return (beg);
-}
-
 t_type	*is_elem(t_type *t, const enum redir redir)
 {
 	if (t->redir == redir)
@@ -55,16 +28,13 @@ t_type	*is_elem(t_type *t, const enum redir redir)
 
 t_list *lexed_find(const t_list *lexed, const enum redir elem)
 {
-	lexed = ft_lstmap_redir((t_list *)lexed, is_elem, free, elem);
 	while (lexed && lexed->next)
 	{
-		if (lexed->content != NULL)
-		    break ;
+		if (is_elem(lexed->content, elem))
+			return ((t_list *)lexed);
 		lexed = lexed->next;
 	}
-	if (!lexed->content)
-		return (NULL);
-	return ((t_list *)lexed);
+	return (NULL);
 }
 
 int parse(t_list *lexed)
@@ -104,7 +74,9 @@ int parse(t_list *lexed)
 			c = ft_split(((t_type *)lexed->content)->word.word, ' ');
 			if (!c && write(STDERR_FILENO, "malloc error\n", 13))
 				return (1);
-			execute(c, pipefd[0], STDOUT_FILENO); // TODO: get return value and do error handling
+			ret = execute(c, pipefd[0], STDOUT_FILENO);
+			if (error((ret), "execution error"))
+				return (1);
 		}
 		else
 		{

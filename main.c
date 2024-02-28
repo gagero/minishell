@@ -11,7 +11,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include "lexer.h"
-#include "debug.h"
+#include <errno.h>
 #include "parser.h"
 
 int loop(void);
@@ -24,7 +24,7 @@ void generic_sig_handler(int sig)
 	int	i;
 
 	i = 0;
-	while (g_running_processes[i]) // null
+	while (g_running_processes[i])
 	{
 		waitpid(g_running_processes[i], &status, WNOHANG);
 		if (!WIFEXITED(status))
@@ -52,7 +52,7 @@ inline static void init_error(bool expr)
 	}
 }
 
-inline static void init(int reinit, char ***last_environ)
+inline static void init(char ***last_environ)
 {
 	struct sigaction	sa;
 	struct termios		current;
@@ -61,8 +61,6 @@ inline static void init(int reinit, char ***last_environ)
 	sa.sa_handler = generic_sig_handler;
 	sa.sa_flags = SA_RESTART;
 	init_error(sigaction(SIGINT, &sa, NULL) == -1);
-	if (reinit == 0)
-	{
 		*last_environ = NULL;
 		init_error(tcgetattr(0, &current) == -1);
 		tty_fd = open(ttyname(0), O_RDONLY);
@@ -71,30 +69,58 @@ inline static void init(int reinit, char ***last_environ)
 		init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
 		close(tty_fd);
 		init_error(chdir(getenv("HOME")) == -1);
-	}
 }
 
-// TODO: error messages
+// FIXME: always errors out with no quotes
 int check_syntax(char *text)
 {
 	int	eq_count;
 	char	*eq;
 
+	errno = EIO;
 	eq_count = 0;
 	eq = ft_strchr(text, '=');
 	while (eq)
 	{
 		eq_count++;
-		if (eq == text || !ft_isalpha(eq[1]) || !ft_isalpha(*(eq - 1)))
+		if (error((eq == text || !ft_isalpha(eq[1]) || !ft_isalpha(*(eq - 1))), ""))
 			return (1);
 		text = eq;
 	}
-	if (eq_count > 1)
+	if (error((eq_count > 1), ""))
 		return (1);
-	// TODO: quote checking
-	while (text++)
-		if (ft_isascii(*text))
+	eq = (char *)1;
+	eq_count = 0;
+	while (eq)
+	{
+		eq = ft_strchr(text, '"');
+		if (eq)
+		{
+			eq_count++;
+			eq++;
+		}
+	}
+	if (error((eq_count && eq_count % 2 != 0), ""))
+		return (1);
+	eq = (char *)1;
+	eq_count = 0;
+	while (eq)
+	{
+		eq = ft_strchr(text, '\'');
+		if (eq)
+		{
+			eq_count++;
+			eq++;
+		}
+	}
+	if (error((eq_count && eq_count % 2 != 0), ""))
+		return (1);
+	while (*text)
+	{
+		if (error((!ft_isascii(*text)), ""))
 			return (1);
+		text++;
+	}
 	return (0);
 }
 
@@ -105,20 +131,16 @@ int loop(void)
 	char	*command;
 	char	*prompt;
 	char	**last_environ;
-	static int	runs;
 
-	runs++;
-	if (runs > 1)
-		init(1, &last_environ);
-	else
-		init(0, &last_environ);
+	init(&last_environ);
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
-		g_running_processes = malloc(sizeof(pid_t));
-		g_running_processes[0] = 0;
+		g_running_processes = ft_calloc(1, sizeof(pid_t));
 		prompt = ft_strjoin(cwd, "> ");
+		free(cwd);
 		command = readline(prompt);
+		free(prompt);
 		if (!command)
 		{
 			ft_printf("\n");
@@ -126,11 +148,9 @@ int loop(void)
 		}
 		if (!command[0])
 			continue ;
+		if (check_syntax(command))
+			return (1);
 		add_history(command);
-		free(cwd);
-		free(prompt);
-		if (!check_syntax(command))
-			exit(EXIT_SUCCESS);
 		// testing
 		lexed = lexer(command, last_environ);
 		free(g_running_processes);

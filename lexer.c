@@ -24,7 +24,6 @@ char	*extract_word(const char **str)
 	return (ft_substr(beg, 0, end - beg));
 }
 
-// string made invalid here
 void	*trim(void *void_node)
 {
 	char	*trimmed;
@@ -34,6 +33,8 @@ void	*trim(void *void_node)
 	node = void_node;
 	if ((intptr_t)(node->word.word) > (intptr_t)4)
 	{
+		if (node->word.word[0] == '\0') // FIXME: is this correct? test with more advanced testcases
+			return (node);
 		trimmed = ft_strdup(node->word.word);
 		end = trimmed + ft_strlen(trimmed) - 1;
 		while (ft_isspace(*trimmed))

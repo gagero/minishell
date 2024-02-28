@@ -91,6 +91,8 @@ int builtin(char **command)
 		cd(command[1]);
 	else if (!ft_strncmp(command[0], "env", 3))
 		env();
+	else if (!ft_strncmp(command[0], "echo", 4))
+		echo(command);
 	// TODO: rest of the builtins
 	else
 		return (1);

@@ -8,7 +8,7 @@
 
 int process_pipes(t_list *lexed, int pipefd[2])
 {
-	t_list	*found; // no symbol?
+	t_list	*found;
 	int			internal_pipefd[2];
 	int			ret;
 	char		*output;
@@ -23,21 +23,19 @@ int process_pipes(t_list *lexed, int pipefd[2])
 	i = 0;
 	while (1)
 	{
-		found = lexed_find(found, PIPE);
+		found = lexed_find(found, PIPE); // prev->content gets invalidated here
 		if (!found)
 			break ;
 		if (!found->prev)
-			return (write(2, "syntax error\n", 13), 1);
-		cmds[0] = ft_split(((t_type *)found->prev->content)->word.word, ' '); // FIXME: segfaults, no prev? can't get debug symbols
+			return (write(STDERR_FILENO, "syntax error\n", 13), 1);
+		cmds[0] = ft_split(((t_type *)found->prev->content)->word.word, ' ');
 		cmds[1] = ft_split(((t_type *)found->next->content)->word.word, ' ');
 		ret = execute(cmds[0], pipefd[0], internal_pipefd[1]);
 		if (ret)
-			return (write(2, "execution error\n", 16), 1);
+			return (write(STDERR_FILENO, "execution error\n", 16), 1);
 		ret = execute(cmds[1], internal_pipefd[0], internal_pipefd[1]);
 		if (ret)
-			return (write(2, "execution error\n", 16), 1);
-		free(cmds[0]);
-		free(cmds[1]);
+			return (write(STDERR_FILENO, "execution error\n", 16), 1);
 		i++;
 	}
 	if (i > 0)

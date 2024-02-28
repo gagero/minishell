@@ -63,7 +63,11 @@
 ** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
 
 * Failing testcases
-	* | |
+	* all pipes
 	* no prompts (I forgot about them)
-***** need to test quotes
-* REPLACE GCC WITH CC
+  * Prompt doesn't quit properly
+  * we don't wait for output before reprinting prompt, breaks ls
+  * signals don't get passed to binary
+  * pipe loops infinitely
+  * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
+    * Empty quotes fail
