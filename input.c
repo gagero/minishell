@@ -9,6 +9,7 @@
 #include <sys/ioctl.h>
 
 // TODO: break up into separate functions
+// TODO: verify logic
 intptr_t	handle_input_redir(t_list *found, int pipefd[2])
 {
 	int		fd;
@@ -29,16 +30,19 @@ intptr_t	handle_input_redir(t_list *found, int pipefd[2])
 		if (error((!copy), "malloc error"))
 		{
 			free(copy);
+			close(fd);
 			return (1);
 		}
-		read(pipefd[0], copy, total_bytes_read);
+		read(fd, copy, total_bytes_read);
+		write(pipefd[1], copy, total_bytes_read);
+		close(fd);
 	}
 	else if (((t_type *)found->content)->redir == HEREDOC)
 	{
 		if (((intptr_t)((t_type *)found->next->content)->word.word) > 4)
 		{
 			copy = heredoc_prompt(((t_type *)found->next->content)->word.word, &total_bytes_read);
-			read(pipefd[0], copy, ft_strlen(copy));
+			write(pipefd[1], copy, ft_strlen(copy));
 		}
 		else
 			return (1); // TODO: error message

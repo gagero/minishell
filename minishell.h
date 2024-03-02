@@ -12,4 +12,5 @@ int		wait_en_masse(void);
 t_type *substitute(const t_type *buf);
 int wait_for_proc(void);
 int	error(bool expr, char *message);
+void generic_sig_handler(int sig);
 #endif

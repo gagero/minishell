@@ -12,10 +12,17 @@ enum redir
 	PIPE,
 };
 
+enum quote_state
+{
+	SINGLE,
+	DOUBLE,
+	NONE,
+};
+
 struct s_word
 {
 	char *word;
-	bool is_quoted;
+	enum quote_state quote_state;
 };
 
 typedef union s_type

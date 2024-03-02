@@ -66,7 +66,7 @@ t_type	*tokenize(const char *text)
 		ret->redir = INPUT;
 	else
 	{
-		ret->word.is_quoted = false;
+		ret->word.quote_state = NONE;
 		ret->word.word = extract_word(&text);
 	}
 	return (ret);
@@ -130,7 +130,14 @@ static int next_special(char *text)
 	return (min);
 }
 
-// TODO: test
+char	*handle_quotes(t_type *node)
+{
+	char	*text;
+
+	text = node->word.word;
+}
+
+// TODO: quotes
 t_list	*lexer(char *text, char **last_environ)
 {
 	t_list 			*ret;

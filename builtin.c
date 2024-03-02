@@ -7,6 +7,8 @@
 
 bool	is_builtin(char *command)
 {
+	if (!command)
+		return (false);
 	if (ft_strncmp(command, "echo", 4) == 0
 		|| ft_strncmp(command, "cd", 2) == 0
 		|| ft_strncmp(command, "pwd", 3) == 0

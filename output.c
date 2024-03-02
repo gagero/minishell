@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+// TODO: validate logic
 int handle_output(t_list *lexed, int pipefd[2])
 {
 	t_list	*found;

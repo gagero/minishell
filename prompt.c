@@ -5,8 +5,8 @@
 #include "lexer.h"
 #include <stdlib.h>
 #include <stdbool.h>
-
-// FIXME: this whole thing is bad
+#include <signal.h>
+#include "minishell.h"
 
 void	pipe_prompt(t_list	**lexed)
 {
@@ -21,39 +21,52 @@ void	pipe_prompt(t_list	**lexed)
 	ft_lstadd_back(lexed, ft_lstnew(insert));
 }
 
+static bool sig = true;
+
+// FIXME: doesn't reprint prompt properly
+void	heredoc_handler(int signum)
+{
+	if (signum == SIGINT)
+		sig = false;
+}
+
+// FIXME: delim doesn't end prompt
 char	*heredoc_prompt(const char *const delim, int *const len)
 {
 	char	*cmd;
 	char	*ret;
 	char	*little;
 	char	*tmp;
+	struct sigaction s;
 
 	ret = "";
 	cmd = (char *)1;
-	// TODO: SIGINT
-	while (cmd)
+	*len = ft_strlen(delim);
+	s.sa_handler = heredoc_handler;
+	sigaction(SIGINT, &s, NULL);
+	sig = true;
+	while (cmd && sig)
 	{
 		cmd = readline("heredoc> ");
-		*len = ft_strlen(cmd);
+		if (!sig)
+			return (NULL);
 		little = ft_strnstr(cmd, delim, *len);
 		if (little)
 		{
-			tmp = ft_substr(cmd, 0, little + ft_strlen(little) - cmd);
-			if (ret[0])
-				*len += ft_strlen(tmp);
-			else
-				*len = ft_strlen(tmp);
+			tmp = ft_substr(cmd, 0, little - cmd);
 			ft_strjoin(ret, tmp);
+			*len = ft_strlen(ret);
 			free(cmd);
 			free(tmp);
+			s.sa_handler = generic_sig_handler;
+			sigaction(SIGINT, &s, NULL);
 			return (ret);
 		}
 		else
-		{
-			*len += ft_strlen(cmd);
 			ft_strjoin(ret, cmd);
-		}
 		free(cmd);
 	}
+	s.sa_handler = generic_sig_handler;
+	sigaction(SIGINT, &s, NULL);
 	return (NULL);
 }

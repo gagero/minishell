@@ -63,11 +63,9 @@
 ** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
 
 * Failing testcases
-	* all pipes
-	* no prompts (I forgot about them)
-  * Prompt doesn't quit properly
-  * we don't wait for output before reprinting prompt, breaks ls
+  * we don't wait for output before reprinting prompt, breaks ls (wait_en_masse() breaks?)
   * signals don't get passed to binary
   * pipe loops infinitely
+    * Keeps getting EBADF errors
   * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
-    * Empty quotes fail
+  * Redirections don't seem to do anything

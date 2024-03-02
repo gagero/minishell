@@ -48,8 +48,6 @@ int parse(t_list *lexed)
 	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // do prev pointers get created here?
 	if (!lexed)
 		return (1);
-	if (ft_lstsize(lexed) > 2 && ((t_type *)ft_lstlast(lexed)->prev->content)->redir == HEREDOC)
-		heredoc_prompt(((t_type *)ft_lstlast(lexed)->content)->word.word, &out);
 	out = 1;
 	found = (t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)lexed_find(lexed, HEREDOC));
 	ret = pipe(pipefd);
@@ -69,18 +67,18 @@ int parse(t_list *lexed)
 	}
 	else if (!lexed_find(lexed, OUTPUT) || !lexed_find(lexed, APPEND))
 	{
-		if (((t_type *)lexed->content)->redir > 4)
+		if ((uintptr_t)((t_type *)lexed->content)->word.word > (uintptr_t)4)
 		{
 			c = ft_split(((t_type *)lexed->content)->word.word, ' ');
 			if (!c && write(STDERR_FILENO, "malloc error\n", 13))
 				return (1);
 			ret = execute(c, pipefd[0], STDOUT_FILENO);
-			if (error((ret), "execution error"))
+			if (ret)
 				return (1);
 		}
 		else
 		{
-			write(STDERR_FILENO, "Parse error: command not found\n", 31);
+			write(STDERR_FILENO, "Parse error: unhandled case; possible syntax error\n", 51);
 			return (1);
 		}
 	}
@@ -102,6 +100,8 @@ int parse(t_list *lexed)
 		free(*c);
 		free(c);
 	}
+	close(pipefd[0]);
+	close(pipefd[1]);
 	if (error((ret == 1), "output error"))
 		return (1);
 	return (0);

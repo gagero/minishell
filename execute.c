@@ -74,6 +74,8 @@ static char	*find_command_path(char *command)
 	char	*cur;
 	char	*joined;
 
+	if (!command)
+		return (NULL);
 	if (is_builtin(command))
 		return (command);
 	cur = getcwd(NULL, 0);

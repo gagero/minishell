@@ -49,6 +49,8 @@ int process_pipes(t_list *lexed, int pipefd[2])
 		}
 		read(internal_pipefd[0], output, size); // TODO: check if nul-terminated
 		write(pipefd[1], output, size);
+		close(internal_pipefd[0]);
+		close(internal_pipefd[1]);
 		if (error((ret == -1), "pipe error"))
 			return (1);
 	}

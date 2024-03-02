@@ -14,8 +14,6 @@
 #include <errno.h>
 #include "parser.h"
 
-int loop(void);
-
 pid_t	*g_running_processes = NULL;
 
 void generic_sig_handler(int sig)
@@ -37,7 +35,6 @@ void generic_sig_handler(int sig)
 		rl_on_new_line();
 		rl_replace_line("", 1);
 		rl_redisplay();
-		/* loop(); */
 	}
 	if (sig == SIGQUIT)
 	{}
@@ -89,11 +86,11 @@ int check_syntax(char *text)
 	}
 	if (error((eq_count > 1), ""))
 		return (1);
-	eq = (char *)1;
+	eq = text;
 	eq_count = 0;
 	while (eq)
 	{
-		eq = ft_strchr(text, '"');
+		eq = ft_strchr(eq, '"');
 		if (eq)
 		{
 			eq_count++;
@@ -102,11 +99,11 @@ int check_syntax(char *text)
 	}
 	if (error((eq_count && eq_count % 2 != 0), ""))
 		return (1);
-	eq = (char *)1;
+	eq = text;
 	eq_count = 0;
 	while (eq)
 	{
-		eq = ft_strchr(text, '\'');
+		eq = ft_strchr(eq, '\'');
 		if (eq)
 		{
 			eq_count++;
@@ -124,15 +121,13 @@ int check_syntax(char *text)
 	return (0);
 }
 
-int loop(void)
+int loop(char **last_environ)
 {
 	char	*cwd;
 	t_list	*lexed;
 	char	*command;
 	char	*prompt;
-	char	**last_environ;
 
-	init(&last_environ);
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
@@ -151,11 +146,10 @@ int loop(void)
 		if (check_syntax(command))
 			return (1);
 		add_history(command);
-		// testing
 		lexed = lexer(command, last_environ);
 		free(g_running_processes);
 		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
-		parse(lexed);
+		parse(lexed); // empty quotes fail here
 		wait_en_masse();
 		free(command);
 	}
@@ -163,7 +157,10 @@ int loop(void)
 
 int main(void)
 {
-	loop();
+	char	**last_environ;
+
+	init(&last_environ);
+	loop(last_environ);
 }
 
 int	error(bool expr, char *message)

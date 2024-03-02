@@ -65,7 +65,7 @@ t_type *substitute(const t_type *buf)
 		ret->redir = buf->redir;
 		return (ret);
 	}
-	ret->word.is_quoted = buf->word.is_quoted;
+	ret->word.quote_state = buf->word.quote_state;
 	dollar_ptr = ft_strchr(buf->word.word, '$');
 	if (!dollar_ptr)
 		{
@@ -74,7 +74,10 @@ t_type *substitute(const t_type *buf)
 		}
 	name = ft_substr(dollar_ptr, 1, buf->word.word + ft_strlen(buf->word.word) - dollar_ptr);
 	if (!name)
+	{
+		free(ret);
 		return (NULL);
+	}
 	replacement = getenv(name);
 	if (!replacement)
 		replacement = ft_strdup("\n");

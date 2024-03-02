@@ -1,7 +1,7 @@
 NAME = minishell
 CC = cc
 CFLAGS = -Wall -Wextra -g3 -O0 -lreadline -fno-omit-frame-pointer -fsanitize=address,leak,undefined -fPIE
-SRCS = main.c execute.c builtin.c builtin2.c substitute.c lexer.c prompt.c debug.c parser.c input.c shellpipe.c output.c
+SRCS = main.c execute.c builtin.c builtin2.c substitute.c lexer.c prompt.c parser.c input.c shellpipe.c output.c
 OBJS = $(SRCS:.c=.o)
 LIBFT = libft/libft.a
 
