@@ -18,7 +18,7 @@ intptr_t	handle_input_redir(t_list *found, int pipefd[2])
 	char	**split;
 	int ret;
 
-  if (((t_type *)found->content)->redir == INPUT)
+  if (found && ((t_type *)found->content)->redir == INPUT)
 	{
 		fd = open(((t_type *)found->next->content)->word.word, O_RDONLY);
 		if (error((fd == -1), "Open error"))
@@ -37,7 +37,7 @@ intptr_t	handle_input_redir(t_list *found, int pipefd[2])
 		write(pipefd[1], copy, total_bytes_read);
 		close(fd);
 	}
-	else if (((t_type *)found->content)->redir == HEREDOC)
+	else if (found && ((t_type *)found->content)->redir == HEREDOC)
 	{
 		if (((intptr_t)((t_type *)found->next->content)->word.word) > 4)
 		{
@@ -48,9 +48,9 @@ intptr_t	handle_input_redir(t_list *found, int pipefd[2])
 			return (1); // TODO: error message
 	}
 	else
-		return (1);
+		return (0);
 	split = ft_split(((t_type *)found->prev->content)->word.word, ' ');
-	if (error((!split), "malloc error"))
+	if (!split)
 		return (1);
 	return ((intptr_t)split);
 }

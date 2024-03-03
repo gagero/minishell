@@ -39,33 +39,26 @@ t_list *lexed_find(const t_list *lexed, const enum redir elem)
 
 int parse(t_list *lexed)
 {
-	t_list	*found;
 	intptr_t		ret;
 	int			pipefd[2];
 	char			**c;
 	int			out;
 
-	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free); // do prev pointers get created here?
+	lexed = ft_lstmap(lexed, (void *(*)(void *))substitute, free);
 	if (!lexed)
 		return (1);
 	out = 1;
-	found = (t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)lexed_find(lexed, HEREDOC));
 	ret = pipe(pipefd);
 	if (ret)
 		return (1);
-	if (found)
-	{
-		ret = handle_input_redir(found, pipefd);
-		if (error((ret == 1), "redir error"))
-			return (1);
-	}
-	else if ((lexed_find(lexed, PIPE)))
-	{
-		ret = process_pipes(lexed, pipefd);
-		if (ret == 2)
-			return (1);
-	}
-	else if (!lexed_find(lexed, OUTPUT) || !lexed_find(lexed, APPEND))
+	ret = handle_input_redir((t_list *)min((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)(lexed_find(lexed, HEREDOC))), pipefd);
+	if (error((ret == 1), "redir error"))
+		return (1);
+	// FIXME: put data into pipefd here?
+	ret = process_pipes(lexed, pipefd);
+	if (ret == 2)
+		return (1);
+	if (!lexed_find(lexed, OUTPUT) || !lexed_find(lexed, APPEND))
 	{
 		if ((uintptr_t)((t_type *)lexed->content)->word.word > (uintptr_t)4)
 		{
@@ -75,6 +68,7 @@ int parse(t_list *lexed)
 			ret = execute(c, pipefd[0], STDOUT_FILENO);
 			if (ret)
 				return (1);
+			return (0);
 		}
 		else
 		{
@@ -84,8 +78,10 @@ int parse(t_list *lexed)
 	}
 	else
 		out = handle_output(lexed, pipefd);
-	if (!out) // FIXME: proper outputting
+	// TODO: double check
+	if (!out)
 	{
+		close(pipefd[1]);
 		ret = ioctl(pipefd[0], FIONREAD, &out);
 		c = malloc(sizeof(*c));
 		*c = malloc(out);
@@ -101,7 +97,6 @@ int parse(t_list *lexed)
 		free(c);
 	}
 	close(pipefd[0]);
-	close(pipefd[1]);
 	if (error((ret == 1), "output error"))
 		return (1);
 	return (0);

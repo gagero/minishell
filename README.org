@@ -65,7 +65,6 @@
 * Failing testcases
   * we don't wait for output before reprinting prompt, breaks ls (wait_en_masse() breaks?)
   * signals don't get passed to binary
-  * pipe loops infinitely
-    * Keeps getting EBADF errors
+  * pipe keeps getting EBADF errors
   * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
   * Redirections don't seem to do anything

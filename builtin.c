@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "builtin.h"
 #include <unistd.h>
+#include "minishell.h"
 
 bool	is_builtin(char *command)
 {
@@ -66,14 +67,22 @@ int echo(char **command)
 int pwd(void)
 {
 	char	*w;
+	char	*n;
 
 	w = getcwd(NULL, 0);
-	if (ft_printf(w) == -1)
+	if (error((!w), "malloc error"))
+		return (1);
+	n = malloc(ft_strlen(w) + 2);
+	ft_strlcpy(n, w, ft_strlen(w) + 1);
+	ft_strlcat(n, "\n", ft_strlen(w) + 2);
+	if (ft_printf(n) == -1)
 	{
 		free(w);
+		free(n);
 		return (1);
 	}
 	free(w);
+	free(n);
 	return (0);
 }
 
@@ -85,18 +94,23 @@ void exit_shell(void)
 
 int builtin(char **command)
 {
+	int ret;
+
+	ret = 0;
 	if (!ft_strncmp(command[0], "exit", 4))
 		exit_shell();
 	else if (!ft_strncmp(command[0], "pwd", 3))
-		pwd();
+		ret += pwd();
 	else if (!ft_strncmp(command[0], "cd", 2))
-		cd(command[1]);
+		ret += cd(command[1]);
 	else if (!ft_strncmp(command[0], "env", 3))
-		env();
+		ret += env();
 	else if (!ft_strncmp(command[0], "echo", 4))
-		echo(command);
+		ret += echo(command);
 	// TODO: rest of the builtins
 	else
+		return (1);
+	if (error((ret), "builtin error"))
 		return (1);
 	return (0);
 }

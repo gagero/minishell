@@ -97,7 +97,7 @@ static void child_error(bool expr, int errno_value)
 	if (expr)
 	{
 		errno = errno_value;
-		perror("Minishell");
+		perror("Minishell: process error");
 		exit(1);
 	}
 }
@@ -120,6 +120,8 @@ static pid_t	run_command(char **command, int input, int output)
 		i++;
 	ret = fork();
 	g_running_processes[i] = ret;
+	close(input);
+	close(output);
 	if (ret == 0)
 	{
 		child_init();
@@ -179,7 +181,7 @@ int	execute(char **command, int input, int output) // FIXME: command is NULL
 	if (command[0] == NULL)
 	{
 		errno = ENOENT;
-		perror("Minishell");
+		perror("Minishell: execute error");
 		return (1);
 	}
 	run_command(command, input, output);
