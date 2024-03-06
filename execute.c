@@ -7,6 +7,7 @@
 #include "minishell.h"
 #include <stdbool.h>
 #include "builtin.h"
+#include "parser.h"
 #include <errno.h>
 
 // Frees handle if bool is true
@@ -120,19 +121,19 @@ static pid_t	run_command(char **command, int input, int output)
 		i++;
 	ret = fork();
 	g_running_processes[i] = ret;
-	close(input);
-	close(output);
 	if (ret == 0)
 	{
 		child_init();
 		if (input != STDIN_FILENO)
 		{
-			child_error((dup2(input, STDIN_FILENO) < 0), errno);
+			child_error((dup2(STDIN_FILENO, input) < 0), errno);
+			/* child_error((dup2(input, STDIN_FILENO) < 0), errno); */
 			close(input);
 		}
 		if (output != STDOUT_FILENO)
 		{
-			child_error((dup2(output, STDOUT_FILENO) < 0), errno);
+			child_error((dup2(STDOUT_FILENO, output) < 0), errno);
+			/* child_error((dup2(output, STDOUT_FILENO) < 0), errno); */
 			close(output);
 		}
 		if (execve(command[0], command, __environ) == -1)
@@ -145,6 +146,7 @@ static pid_t	run_command(char **command, int input, int output)
 	}
 	if (ret < 0)
 		perror("Minishell: fork error");
+	
 	g_running_processes[i] = 0;
 	if (input != STDIN_FILENO)
 		close(input);
@@ -170,11 +172,10 @@ int	wait_en_masse(void)
 	return (status);
 }
 
-int	execute(char **command, int input, int output) // FIXME: command is NULL
+int	execute(char **command, int input, int output)
 {
 	int	i;
 
-	/* TODO: place into parser */
 	if (command && is_builtin(command[0]))
 		return (builtin(command));
 	command[0] = find_command_path(command[0]);
@@ -184,7 +185,9 @@ int	execute(char **command, int input, int output) // FIXME: command is NULL
 		perror("Minishell: execute error");
 		return (1);
 	}
-	run_command(command, input, output);
+	i = run_command(command, input, output);
+	if (error((i == -1), "execution error"))
+		return (1);
 	i = 0;
 	while (g_running_processes[i])
 		i++;
