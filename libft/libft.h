@@ -138,4 +138,6 @@ char	*get_next_line(int fd);
 
 int		ft_printf(const char *str, ...);
 
+int	ft_lstcount(t_list *lst, bool (*f)(void *));
+
 #endif

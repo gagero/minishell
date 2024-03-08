@@ -57,14 +57,31 @@
   + [ ] envvar substitution
     + [ ] Normal envvars
     + [ ] Last process code ($?)
-
 * Notes
 ** Don't forget to turn off the sanitizers (-fsanitize=address,leak,undefined in Makefile) when using valgrind
 ** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
-
 * Failing testcases
   * we don't wait for output before reprinting prompt, breaks ls (wait_en_masse() breaks?)
   * signals don't get passed to binary
-  * pipe keeps getting EBADF errors
+  * pipe first command outputs then hangs
   * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
   * Redirections don't seem to do anything
+  * SIGQUIT fucks up cursor
+  * Pipes run first command again
+  * Exit doesn't work
+    
+    	  #+BEGIN_SRC shell
+	/home/ggero> ks | wc -l
+	Minishell: execute error: No such file or directory
+	execution error
+	Minishell: execute error: No such file or directory
+	/home/ggero> ls | wc -l
+	/home/ggero> Minishell: process error: Bad file descriptor
+#+END_SRC
+#+BEGIN_SRC shell
+	/home/ggero> $?
+	Minishell: execute error: No such file or directory
+	/home/ggero> echo $?
+	$
+	
+#+END_SRC

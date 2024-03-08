@@ -51,3 +51,13 @@ t_list	**ft_lstpred(bool (*pred)(bool, t_list *), bool expr, t_list *lst)
 	}
 	return (ret);
 }
+
+int	ft_lstcount(t_list *lst, bool (*f)(void *))
+{
+	int	c;
+
+	c = 0;
+	while (f(lst->content))
+		c++;
+	return (c);
+}
