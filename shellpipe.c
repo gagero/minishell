@@ -11,7 +11,7 @@ int	get_pipe_size(int pipe, int *size)
 	int	ret;
 
 	ret = ioctl(pipe, FIONREAD, size);
-	if (error((ret == -1), "ioctl error"))
+	if (ret == -1)
 		return (-1);
 	return (0);
 }
@@ -21,15 +21,11 @@ int process_pipes(t_list *lexed, int pipefd[2], int copy[2])
 	t_list	*found;
 	int			internal_pipefd[2];
 	int			ret;
-	char		*output;
-	int			size;
-	int			i;
 	char		**cmds[2];
 
-  if (error((pipe(internal_pipefd) == -1 || pipe(copy) == -1), "Pipe error"))
+  if (ERROR((pipe(internal_pipefd) == -1 || pipe(copy) == -1), "Pipe error"))
 		return (1);
 	found = lexed;
-	i = 0;
 	while (found)
 	{
 		found = lexed_find(found, PIPE);
@@ -46,7 +42,6 @@ int process_pipes(t_list *lexed, int pipefd[2], int copy[2])
 		if (ret)
 			return (write(STDERR_FILENO, "execution error\n", 16), 1);
 		found = found->next;
-		i++;
 	}
 	return (0);
 }

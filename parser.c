@@ -65,7 +65,7 @@ int parse(t_list *lexed)
 		if (pipe(pipefd) == -1 || pipe(copy) == -1)
 			return (1);
 		ret = handle_input_redir((t_list *)max((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)(lexed_find(lexed, HEREDOC))), pipefd); // does this close?
-		if (error((ret == 1), "redir error"))
+		if (ERROR((ret == 1), "redir error"))
 			return (1);
 		ret = process_pipes(lexed, pipefd, copy); // closes pipefd[READ_END]
 		if (ret == 2)

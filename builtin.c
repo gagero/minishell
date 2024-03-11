@@ -70,7 +70,7 @@ int pwd(void)
 	char	*n;
 
 	w = getcwd(NULL, 0);
-	if (error((!w), "malloc error"))
+	if (ERROR((!w), "malloc error"))
 		return (1);
 	n = malloc(ft_strlen(w) + 2);
 	ft_strlcpy(n, w, ft_strlen(w) + 1);
@@ -110,7 +110,7 @@ int builtin(char **command)
 	// TODO: rest of the builtins
 	else
 		return (1);
-	if (error((ret), "builtin error"))
+	if (ERROR((ret), "builtin error"))
 		return (1);
 	return (0);
 }

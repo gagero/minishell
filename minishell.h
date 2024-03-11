@@ -6,11 +6,13 @@
 
 extern pid_t *g_running_processes;
 
+#define	ERROR(expr, message) error(expr, message, __FILE_NAME__, __LINE__)
+
 void	free2d(char **ptr, bool handle);
 int		execute(char **command, int input, int output);
 int		wait_en_masse(void);
 t_type *substitute(const t_type *buf);
 int wait_for_proc(void);
-int	error(bool expr, char *message);
+int	error(bool expr, char *message, char *file, int line);
 void generic_sig_handler(int sig);
 #endif

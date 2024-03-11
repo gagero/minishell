@@ -85,3 +85,8 @@
 	$
 	
 #+END_SRC
+#+BEGIN_SRC shell
+	/home/ggero> ls | wc -l
+	ioctl error: Bad file descriptor
+	output error
+#+END_SRC

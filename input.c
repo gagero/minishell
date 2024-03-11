@@ -19,10 +19,10 @@ intptr_t	handle_input_redir(t_list *found, int pipefd[2])
   if (found && ((t_type *)found->content)->redir == INPUT)
 	{
 		fd = open(((t_type *)found->next->content)->word.word, O_RDONLY);
-		if (error((fd == -1), "Open error") || get_pipe_size(pipefd[READ_END], &total_bytes_read) == -1)
+		if (ERROR((fd == -1), "Open error") || ERROR((get_pipe_size(pipefd[READ_END], &total_bytes_read) == -1), "ioctl error"))
 			return (write(2, "IN\n", 3), 1);
 		copy = malloc(total_bytes_read);
-		if (error((!copy), "malloc error"))
+		if (ERROR((!copy), "malloc error"))
 		{
 			free(copy);
 			close(fd);

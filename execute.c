@@ -186,7 +186,7 @@ int	execute(char **command, int input, int output)
 		return (1);
 	}
 	i = run_command(command, input, output);
-	if (error((i == -1), "execution error"))
+	if (ERROR((i == -1), "execution error"))
 		return (1);
 	i = 0;
 	while (g_running_processes[i])

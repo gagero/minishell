@@ -13,7 +13,6 @@
 #include "lexer.h"
 #include <errno.h>
 #include "parser.h"
-
 pid_t	*g_running_processes = NULL;
 
 void generic_sig_handler(int sig)
@@ -80,11 +79,11 @@ int check_syntax(char *text)
 	while (eq)
 	{
 		eq_count++;
-		if (error((eq == text || !ft_isalpha(eq[1]) || !ft_isalpha(*(eq - 1))), ""))
+		if (ERROR((eq == text || !ft_isalpha(eq[1]) || !ft_isalpha(*(eq - 1))), ""))
 			return (1);
 		text = eq;
 	}
-	if (error((eq_count > 1), ""))
+	if (ERROR((eq_count > 1), ""))
 		return (1);
 	eq = text;
 	eq_count = 0;
@@ -97,7 +96,7 @@ int check_syntax(char *text)
 			eq++;
 		}
 	}
-	if (error((eq_count && eq_count % 2 != 0), ""))
+	if (ERROR((eq_count && eq_count % 2 != 0), ""))
 		return (1);
 	eq = text;
 	eq_count = 0;
@@ -110,11 +109,11 @@ int check_syntax(char *text)
 			eq++;
 		}
 	}
-	if (error((eq_count && eq_count % 2 != 0), ""))
+	if (ERROR((eq_count && eq_count % 2 != 0), ""))
 		return (1);
 	while (*text)
 	{
-		if (error((!ft_isascii(*text)), ""))
+		if (ERROR((!ft_isascii(*text)), ""))
 			return (1);
 		text++;
 	}
@@ -163,12 +162,16 @@ int main(void)
 	loop(last_environ);
 }
 
-int	error(bool expr, char *message)
+int	error(bool expr, char *message, char *file, int line)
 {
+	char *err = malloc(1000);
+	sprintf(err, "%s:%d %s", file, line, message);
 	if (expr)
 	{
-		perror(message);
+		perror(err);
+		free(err);
 		return (1);
 	}
+	free(err);
 	return (0);
 }
