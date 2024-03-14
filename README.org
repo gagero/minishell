@@ -55,9 +55,9 @@
     + [ ] lexer
     + [ ] parser
       + Test with invalid syntax
-  + [ ] envvar substitution
+  + [-] envvar substitution
     + [ ] Normal envvars
-    + [ ] Last process code ($?)
+    + [X] Last process code ($?)
 * Notes
 ** Don't forget to turn off the sanitizers (-fsanitize=address,leak,undefined in Makefile) when using valgrind
 ** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
@@ -65,5 +65,3 @@
   * pipe first command outputs then hangs
   * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
   * Redirections don't seem to do anything
-  * C-\ triggers segfault
-  * C-\ twice in a row fucks up prompt
