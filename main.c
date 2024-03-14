@@ -126,11 +126,12 @@ int loop(char **last_environ)
 	t_list	*lexed;
 	char	*command;
 	char	*prompt;
+	int		*last_code;
 
+	last_code = 0;
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
-		g_running_processes = ft_calloc(1, sizeof(pid_t));
 		prompt = ft_strjoin(cwd, "> ");
 		free(cwd);
 		command = readline(prompt);
@@ -146,12 +147,14 @@ int loop(char **last_environ)
 			return (1);
 		add_history(command);
 		lexed = lexer(command, last_environ);
-		free(g_running_processes);
 		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
-		parse(lexed); // empty quotes fail here
-		wait_en_masse();
+		parse(lexed, last_code); // empty quotes fail here
+		last_code = malloc(sizeof(*last_code));
+		*last_code = wait_en_masse();
 		free(command);
+		free(g_running_processes);
 	}
+	free(last_code);
 }
 
 int main(void)

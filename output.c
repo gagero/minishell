@@ -7,7 +7,6 @@
 #include <fcntl.h>
 
 // TODO: validate logic
-//FIXME: rework
 int handle_output(t_list *lexed, int pipefd[2])
 {
 	t_list	*found;
@@ -18,10 +17,15 @@ int handle_output(t_list *lexed, int pipefd[2])
 	found = (t_list *)max((intptr_t)lexed_find(lexed, APPEND), (uintptr_t)lexed_find(lexed, OUTPUT));
 	if (!found)
 	{
-		if (ERROR((get_pipe_size(pipefd[READ_END], &fd) == -1), "ioctl error")) // FIXME: error here
+		// FIXME: pipefd[READ_END] is empty here
+		if (ERROR((get_pipe_size(pipefd[READ_END], &fd) == -1), "ioctl error"))
 			return (1);
 		buf = malloc(fd);
-		if (read(!buf || pipefd[READ_END], buf, fd) == -1 || write(STDOUT_FILENO, buf, fd) == -1)
+		if (!buf)
+			return (1);
+		if (read(pipefd[READ_END], buf, fd) == -1)
+			return (1);
+		if (write(STDOUT_FILENO, buf, fd) == -1)
 			return (1);
 		return (0);
 	}

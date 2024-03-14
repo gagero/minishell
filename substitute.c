@@ -41,18 +41,21 @@ static char	*substitute_into_string(char *string, char *to_replace, char *replac
 	return (free(string), free2d(components, true), ret);
 }
 
-int wait_for_proc(void)
+static int wait_for_proc(int *last_code)
 {
 	int	i;
 
 	i = 0;
-	while (!g_running_processes[i])
+	while (g_running_processes[i])
 		i++;
+	if (!i && last_code)
+		return (*last_code);
 	waitpid(g_running_processes[i], &i, 0);
+	g_running_processes[i] = 0;
 	return (i);
 }
 
-t_type *substitute(const t_type *buf)
+t_type *substitute(const t_type *buf, int *last_code)
 {
 	char		*dollar_ptr;
 	char		*name;
@@ -74,19 +77,19 @@ t_type *substitute(const t_type *buf)
 		}
 	name = ft_substr(dollar_ptr, 1, buf->word.word + ft_strlen(buf->word.word) - dollar_ptr);
 	if (!name)
-	{
-		free(ret);
-		return (NULL);
-	}
-	replacement = getenv(name);
-	if (!replacement)
-		replacement = ft_strdup("\n");
-	if (strcmp(name, "$?") != 0)
-		dollar_ptr = substitute_into_string(buf->word.word, name, replacement);
+		return (free(ret), NULL);
+	if (ft_strncmp(name, "?", 1) == 0)
+		// always 0 or 256, prints a $ beforehand
+		dollar_ptr = substitute_into_string(buf->word.word, name, ft_itoa(wait_for_proc(last_code)));
 	else
-		dollar_ptr = substitute_into_string(buf->word.word, name, ft_itoa(g_running_processes[wait_for_proc()]));
+	{
+		replacement = getenv(name);
+		if (!replacement)
+			replacement = ft_strdup("\n");
+		dollar_ptr = substitute_into_string(buf->word.word, name, replacement);
+		free(replacement);
+	}
 	free(name);
-	free(replacement);
 	ret->word.word = dollar_ptr;
 	return (ret);
 }

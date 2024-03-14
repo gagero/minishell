@@ -7,7 +7,6 @@
 #include "minishell.h"
 #include <stdbool.h>
 #include "builtin.h"
-#include "parser.h"
 #include <errno.h>
 
 // Frees handle if bool is true
@@ -146,8 +145,6 @@ static pid_t	run_command(char **command, int input, int output)
 	}
 	if (ret < 0)
 		perror("Minishell: fork error");
-	
-	g_running_processes[i] = 0;
 	if (input != STDIN_FILENO)
 		close(input);
 	if (output != STDOUT_FILENO)
@@ -165,6 +162,7 @@ int	wait_en_masse(void)
 	while (g_running_processes[i])
 	{
 		waitpid(g_running_processes[i], &status, 0);
+		g_running_processes[i] = 0;
 		if (WIFEXITED(status))
 			status = WEXITSTATUS(status);
 		i++;
