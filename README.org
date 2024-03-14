@@ -5,26 +5,26 @@
   + [ ] Quotes (both single and double)
     * [ ] expand only in double
     * [ ] prompts
-+ [-] Parser
++ [X] Parser
   + [X] Expand envvars
-  + [ ] Process input redirections/heredocs
-    * [ ] prompts 
-  + [ ] Process pipes in left-to-right order
-    * [ ] prompts
+  + [X] Process input redirections/heredocs
+    * [X] prompts
+  + [X] Process pipes in left-to-right order
+    * [X] prompts
   + [X] Process output/append redirections
 + [X] Establish order of operations
   1. Prompt for heredocs in left-to-right order
   2. Expand envvars
   3. Pipes in left-to-right order
   4. Redirections in left-to-right order
-+ [ ] Redirections
++ [-] Redirections
   + Normal redirections should be handled by the run_command() function, probably just needs the parser done
   + [ ] Appends
     + Can be handled by run_command() but need to open() the file with O_APPEND
   + [ ] Heredocs
     + [ ] Handle SIGINT
       + [ ] Add custom signal disposition before reading from stdin
-  + [ ] Permission check for reading, writing and executing
+  + [X] Permission check for reading, writing and executing
 + [X] Pipes
   + Can be handled by the run_command() function, probably just needs the parser done
 + [ ] Envvar substitution
@@ -65,7 +65,5 @@
   * pipe first command outputs then hangs
   * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
   * Redirections don't seem to do anything
+  * C-\ triggers segfault
   * C-\ twice in a row fucks up prompt
-  * interactive commands (nano) fuck up prompt
-  * Command not found doesn't work
- 

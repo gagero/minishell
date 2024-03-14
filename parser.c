@@ -73,6 +73,15 @@ static t_list	*ft_lstmap_sub(t_list *lst, void *(*f)(void *, int *), void (*del)
 	return (beg);
 }
 
+static int list_ok(void *content)
+{
+	static int ret;
+
+	if (!content)
+		ret = 1;
+	return (ret);
+}
+
 int parse(t_list *lexed, int *last_code)
 {
 	intptr_t		ret;
@@ -84,6 +93,9 @@ int parse(t_list *lexed, int *last_code)
 	count = ft_lstcount(lexed, is_pipe);
 	i = 0;
 	lexed = ft_lstmap_sub(lexed, (void *(*)(void *, int *))substitute, free, last_code);
+	ft_lstiter(lexed, (void (*)(void *))list_ok);
+	if (ERROR((list_ok((void *)1)), "malloc error"))
+		return (1);
 	if (!lexed || ERROR((pipe(pipefd) == -1), "pipe error") || ERROR((pipe(copy) == -1), "pipe error"))
 		return (1);
 	do

@@ -36,7 +36,11 @@ void generic_sig_handler(int sig)
 		rl_redisplay();
 	}
 	if (sig == SIGQUIT)
-	{}
+	{
+		rl_on_new_line();
+		rl_replace_line("", 1);
+		rl_redisplay();
+	}
 }
 
 inline static void init_error(bool expr)
@@ -52,22 +56,21 @@ inline static void init(char ***last_environ)
 {
 	struct sigaction	sa;
 	struct termios		current;
-	int					tty_fd;
+	int								tty_fd;
 
 	sa.sa_handler = generic_sig_handler;
 	sa.sa_flags = SA_RESTART;
 	init_error(sigaction(SIGINT, &sa, NULL) == -1);
-		*last_environ = NULL;
-		init_error(tcgetattr(0, &current) == -1);
-		tty_fd = open(ttyname(0), O_RDONLY);
-		current.c_lflag |= ISIG;
-		init_error(tcsetattr(tty_fd, TCSANOW, &current) == -1);
-		init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
-		close(tty_fd);
-		init_error(chdir(getenv("HOME")) == -1);
+	init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
+	*last_environ = NULL;
+	init_error(tcgetattr(0, &current) == -1);
+	tty_fd = open(ttyname(0), O_RDONLY);
+	current.c_lflag |= ISIG;
+	init_error(tcsetattr(tty_fd, TCSANOW, &current) == -1);
+	close(tty_fd);
+	init_error(chdir(getenv("HOME")) == -1);
 }
 
-// FIXME: always errors out with no quotes
 int check_syntax(char *text)
 {
 	int	eq_count;
@@ -120,35 +123,32 @@ int check_syntax(char *text)
 	return (0);
 }
 
-int loop(char **last_environ)
+int loop(char **last_environ, int *last_code)
 {
 	char	*cwd;
 	t_list	*lexed;
 	char	*command;
 	char	*prompt;
-	int		*last_code;
-
-	last_code = 0;
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
 		prompt = ft_strjoin(cwd, "> ");
 		free(cwd);
+		g_running_processes = ft_calloc(sizeof(*g_running_processes), 1);
 		command = readline(prompt);
 		free(prompt);
 		if (!command)
-		{
-			ft_printf("\n");
 			exit_shell();
-		}
 		if (!command[0])
 			continue ;
 		if (check_syntax(command))
 			return (1);
 		add_history(command);
 		lexed = lexer(command, last_environ);
+		free(g_running_processes);
 		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
-		parse(lexed, last_code); // empty quotes fail here
+		if (parse(lexed, last_code)) // empty quotes fail here
+			return (1);
 		last_code = malloc(sizeof(*last_code));
 		*last_code = wait_en_masse();
 		free(command);
@@ -160,9 +160,11 @@ int loop(char **last_environ)
 int main(void)
 {
 	char	**last_environ;
+	int		*last_code;
 
+	last_code = NULL;
 	init(&last_environ);
-	loop(last_environ);
+	loop(last_environ, last_code);
 }
 
 int	error(bool expr, char *message, char *file, int line)

@@ -55,7 +55,32 @@ static int wait_for_proc(int *last_code)
 	return (i);
 }
 
-t_type *substitute(const t_type *buf, int *last_code)
+static char *copy_skip(const char *const str, const char *const to_skip)
+{
+	char *ret;
+	int	i;
+	int	j;
+
+	ret = malloc(ft_strlen(str) - 1);
+	if (!ret)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (i < ft_strlen(str))
+	{
+		if (str + j == to_skip)
+		{
+			j++;
+			continue ;
+		}
+		ret[i] = str[j];
+		j++;
+		i++;
+	}
+	return (ret);
+}
+
+t_type *substitute(t_type *buf, int *last_code)
 {
 	char		*dollar_ptr;
 	char		*name;
@@ -63,6 +88,8 @@ t_type *substitute(const t_type *buf, int *last_code)
 	t_type	*ret;
 
 	ret = malloc(sizeof(t_type));
+	if (!ret)
+		return (NULL);
 	if (buf->redir <= 4)
 	{
 		ret->redir = buf->redir;
@@ -71,15 +98,17 @@ t_type *substitute(const t_type *buf, int *last_code)
 	ret->word.quote_state = buf->word.quote_state;
 	dollar_ptr = ft_strchr(buf->word.word, '$');
 	if (!dollar_ptr)
-		{
-			ret->word.word = buf->word.word;
-			return (ret);
-		}
+	{
+		ret->word.word = buf->word.word;
+		return (ret);
+	}
 	name = ft_substr(dollar_ptr, 1, buf->word.word + ft_strlen(buf->word.word) - dollar_ptr);
 	if (!name)
 		return (free(ret), NULL);
+	buf->word.word = copy_skip(buf->word.word, dollar_ptr);
+	if (!buf->word.word)
+		return (NULL);
 	if (ft_strncmp(name, "?", 1) == 0)
-		// always 0 or 256, prints a $ beforehand
 		dollar_ptr = substitute_into_string(buf->word.word, name, ft_itoa(wait_for_proc(last_code)));
 	else
 	{
