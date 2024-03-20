@@ -58,8 +58,8 @@ static int wait_for_proc(int *last_code)
 static char *copy_skip(const char *const str, const char *const to_skip)
 {
 	char *ret;
-	int	i;
-	int	j;
+	size_t	i;
+	size_t	j;
 
 	ret = malloc(ft_strlen(str) - 1);
 	if (!ret)

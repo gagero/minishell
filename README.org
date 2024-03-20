@@ -60,8 +60,7 @@
     + [X] Last process code ($?)
 * Notes
 ** Don't forget to turn off the sanitizers (-fsanitize=address,leak,undefined in Makefile) when using valgrind
-** I tried to restructure the code into separate src/ obj/ and include/ folders but I didn't manage to get the Makefile to work
 * Failing testcases
   * pipe first command outputs then hangs
-  * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
   * Redirections don't seem to do anything
+  * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)

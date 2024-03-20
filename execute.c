@@ -119,6 +119,10 @@ static pid_t	run_command(char **command, int input, int output)
 	while(g_running_processes[i])
 		i++;
 	ret = fork();
+	if (input != STDIN_FILENO)
+		close(input);
+	if (output != STDOUT_FILENO)
+		close(output);
 	g_running_processes[i] = ret;
 	if (ret == 0)
 	{
@@ -145,10 +149,10 @@ static pid_t	run_command(char **command, int input, int output)
 	}
 	if (ret < 0)
 		perror("Minishell: fork error");
-	if (input != STDIN_FILENO)
-		close(input);
-	if (output != STDOUT_FILENO)
-		close(output);
+	/* if (input != STDIN_FILENO) */
+	/* 	close(input); */
+	/* if (output != STDOUT_FILENO) */
+	/* 	close(output); */
 	return (ret);
 }
 
