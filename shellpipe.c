@@ -43,6 +43,7 @@ int process_pipes(t_list *lexed, int pipefd[2], int copy[2])
 		/* free(cmds[0]); */
 		if (ret)
 			return (write(STDERR_FILENO, "execution error\n", 16), 1);
+		// FIXME: hangs here; either internal_pipefd[WRITE_END] or copy[READ_END] is open or there is some other issue
 		ret = execute(cmds[1], internal_pipefd[READ_END], copy[WRITE_END]);
 		/* free(cmds[1]); */
 		if (ret)
