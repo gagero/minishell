@@ -86,7 +86,6 @@ int parse(t_list *lexed, int *last_code)
 {
 	intptr_t		ret;
 	int					pipefd[2];
-	int					copy[2];
 	int					count;
 	int					i;
 
@@ -96,21 +95,18 @@ int parse(t_list *lexed, int *last_code)
 	ft_lstiter(lexed, (void (*)(void *))list_ok);
 	if (ERROR((list_ok((void *)1)), "malloc error"))
 		return (1);
-	if (!lexed || ERROR((pipe(pipefd) == -1), "pipe error") || ERROR((pipe(copy) == -1), "pipe error"))
+	if (ERROR((pipe(pipefd)), "pipe error"))
 		return (1);
 	do
 	{
-		ret = handle_input_redir((t_list *)max((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)(lexed_find(lexed, HEREDOC))), pipefd); // does this close?
+		ret = handle_input_redir((t_list *)max((uintptr_t)lexed_find(lexed, INPUT), (uintptr_t)(lexed_find(lexed, HEREDOC))), pipefd); // outputs to pipefd
 		if (ERROR((ret == 1), "redir error"))
 			return (1);
-		ret = process_pipes(lexed, pipefd, copy); // closes pipefd[READ_END] and copy[WRITE_END]
-		if (ret == 2)
-			return (1);
-		if (ERROR((pipe(pipefd) == -1), "pipe error") || ERROR((pipe(copy) == -1), "pipe error"))
+		if (process_pipes(lexed, pipefd)) // pipefd is input and output
 			return (1);
 		i++;
 	} while (i < count);
-	if (handle_output(lexed, copy)) // copy invalid here
+	if (handle_output(lexed, pipefd))
 		return (write(2, "output error\n", 13), 1);
 	return (0);
 }

@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include "builtin.h"
 #include <errno.h>
+#include <sys/stat.h>
 
 // Frees handle if bool is true
 void	free2d(char **ptr, bool handle)
@@ -92,12 +93,15 @@ static char	*find_command_path(char *command)
 	return (find_path(split, command));
 }
 
-static void child_error(bool expr, int errno_value)
+static void child_error(bool expr, int errno_value, char *str)
 {
+	char *msg;
+
+	msg = ft_strjoin("Minishell: child error: ", str);
 	if (expr)
 	{
 		errno = errno_value;
-		perror("Minishell: process error");
+		perror(msg);
 		exit(1);
 	}
 }
@@ -107,6 +111,8 @@ static void child_init(void)
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+	/* close(STDOUT_FILENO); */
+	/* close(STDIN_FILENO); */
 }
 
 static pid_t	run_command(char **command, int input, int output)
@@ -129,14 +135,14 @@ static pid_t	run_command(char **command, int input, int output)
 		child_init();
 		if (input != STDIN_FILENO)
 		{
-			child_error((dup2(STDIN_FILENO, input) < 0), errno);
-			/* child_error((dup2(input, STDIN_FILENO) < 0), errno); */
+			child_error((dup2(STDIN_FILENO, input) < 0), errno, *command);
+			/* child_error((dup2(input, STDIN_FILENO) < 0), errno, *command); */
 			close(input);
 		}
 		if (output != STDOUT_FILENO)
 		{
-			child_error((dup2(STDOUT_FILENO, output) < 0), errno);
-			/* child_error((dup2(output, STDOUT_FILENO) < 0), errno); */
+			child_error((dup2(STDOUT_FILENO, output) < 0), errno, *command);
+			/* child_error((dup2(output, STDOUT_FILENO) < 0), errno, *command); */
 			close(output);
 		}
 		if (execve(command[0], command, __environ) == -1)
@@ -163,13 +169,23 @@ int	wait_en_masse(void)
 
 	i = 0;
 	status = 0;
+	/* while (g_running_processes[i]) */
+	/* { */
+	/* 	waitpid(g_running_processes[i], &status, 0); */
+	/* 	g_running_processes[i] = 0; */
+	/* 	if (WIFEXITED(status)) */
+	/* 		status = WEXITSTATUS(status); */
+	/* 	i++; */
+	/* } */
 	while (g_running_processes[i])
+		i++;
+	while (i > 0)
 	{
 		waitpid(g_running_processes[i], &status, 0);
 		g_running_processes[i] = 0;
 		if (WIFEXITED(status))
 			status = WEXITSTATUS(status);
-		i++;
+		i--;
 	}
 	return (status);
 }
@@ -184,16 +200,10 @@ int	execute(char **command, int input, int output)
 	if (command[0] == NULL)
 	{
 		errno = ENOENT;
-		perror("Minishell: execute error");
+		perror("Minishell");
 		return (1);
 	}
-	i = run_command(command, input, output);
-	if (ERROR((i == -1), "execution error"))
-		return (1);
-	i = 0;
-	while (g_running_processes[i])
-		i++;
-	if (g_running_processes[i] < 0)
+	if (ERROR((run_command(command, input, output) == -1), "execution error"))
 		return (1);
 	free2d(command, true);
 	return (0);

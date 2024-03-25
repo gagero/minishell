@@ -17,7 +17,6 @@ int handle_output(t_list *lexed, int pipefd[2])
 	found = (t_list *)max((intptr_t)lexed_find(lexed, APPEND), (uintptr_t)lexed_find(lexed, OUTPUT));
 	if (!found)
 	{
-		// FIXME: pipefd[READ_END] is empty here
 		if (ERROR((get_pipe_size(pipefd[READ_END], &fd) == -1), "ioctl error"))
 			return (1);
 		buf = malloc(fd);

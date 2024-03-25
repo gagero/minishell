@@ -40,6 +40,7 @@ void generic_sig_handler(int sig)
 		rl_on_new_line();
 		rl_replace_line("", 1);
 		rl_redisplay();
+		exit(0);
 	}
 }
 
@@ -61,7 +62,7 @@ inline static void init(char ***last_environ)
 	sa.sa_handler = generic_sig_handler;
 	sa.sa_flags = SA_RESTART;
 	init_error(sigaction(SIGINT, &sa, NULL) == -1);
-	init_error(sigaction(SIGQUIT, &sa, NULL) == -1);
+	/* init_error(sigaction(SIGQUIT, &sa, NULL) == -1); */
 	*last_environ = NULL;
 	init_error(tcgetattr(0, &current) == -1);
 	tty_fd = open(ttyname(0), O_RDONLY);
@@ -147,7 +148,7 @@ int loop(char **last_environ, int *last_code)
 		lexed = lexer(command, last_environ);
 		free(g_running_processes);
 		g_running_processes = ft_calloc(ft_lstsize(lexed) + 1, sizeof(pid_t));
-		if (parse(lexed, last_code)) // empty quotes fail here
+		if (parse(lexed, last_code)) // FIXME: empty quotes fail here
 			return (1);
 		last_code = malloc(sizeof(*last_code));
 		*last_code = wait_en_masse();
