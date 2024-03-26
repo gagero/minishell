@@ -97,11 +97,12 @@ static void child_error(bool expr, int errno_value, char *str)
 {
 	char *msg;
 
-	msg = ft_strjoin("Minishell: child error: ", str);
 	if (expr)
 	{
+		msg = ft_strjoin("Minishell: child error: ", str);
 		errno = errno_value;
 		perror(msg);
+		free(msg);
 		exit(1);
 	}
 }
@@ -111,8 +112,6 @@ static void child_init(void)
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
-	/* close(STDOUT_FILENO); */
-	/* close(STDIN_FILENO); */
 }
 
 static pid_t	run_command(char **command, int input, int output)
@@ -125,23 +124,24 @@ static pid_t	run_command(char **command, int input, int output)
 	while(g_running_processes[i])
 		i++;
 	ret = fork();
-	if (input != STDIN_FILENO)
-		close(input);
-	if (output != STDOUT_FILENO)
-		close(output);
 	g_running_processes[i] = ret;
 	if (ret == 0)
 	{
 		child_init();
 		if (input != STDIN_FILENO)
 		{
-			child_error((dup2(STDIN_FILENO, input) < 0), errno, *command);
+			close(STDIN_FILENO);
+			child_error((dup(input) < 0), errno, ft_strjoin(*command, " input"));
+			/* char buf[1]; */
+			/* buf[0] = EOF; */
+			/* write(1, buf, 2); */
 			/* child_error((dup2(input, STDIN_FILENO) < 0), errno, *command); */
 			close(input);
 		}
 		if (output != STDOUT_FILENO)
 		{
-			child_error((dup2(STDOUT_FILENO, output) < 0), errno, *command);
+			close(STDOUT_FILENO);
+			child_error((dup(output) < 0), errno, ft_strjoin(*command, " output"));
 			/* child_error((dup2(output, STDOUT_FILENO) < 0), errno, *command); */
 			close(output);
 		}
@@ -155,10 +155,10 @@ static pid_t	run_command(char **command, int input, int output)
 	}
 	if (ret < 0)
 		perror("Minishell: fork error");
-	/* if (input != STDIN_FILENO) */
-	/* 	close(input); */
-	/* if (output != STDOUT_FILENO) */
-	/* 	close(output); */
+	if (input != STDIN_FILENO)
+		close(input);
+	if (output != STDOUT_FILENO)
+		close(output);
 	return (ret);
 }
 
@@ -169,31 +169,29 @@ int	wait_en_masse(void)
 
 	i = 0;
 	status = 0;
-	/* while (g_running_processes[i]) */
-	/* { */
-	/* 	waitpid(g_running_processes[i], &status, 0); */
-	/* 	g_running_processes[i] = 0; */
-	/* 	if (WIFEXITED(status)) */
-	/* 		status = WEXITSTATUS(status); */
-	/* 	i++; */
-	/* } */
 	while (g_running_processes[i])
-		i++;
-	while (i > 0)
 	{
 		waitpid(g_running_processes[i], &status, 0);
 		g_running_processes[i] = 0;
 		if (WIFEXITED(status))
 			status = WEXITSTATUS(status);
-		i--;
+		i++;
 	}
+	/* while (g_running_processes[i]) */
+	/* 	i++; */
+	/* while (i > 0) */
+	/* { */
+	/* 	waitpid(g_running_processes[i], &status, 0); */
+	/* 	g_running_processes[i] = 0; */
+	/* 	if (WIFEXITED(status)) */
+	/* 		status = WEXITSTATUS(status); */
+	/* 	i--; */
+	/* } */
 	return (status);
 }
 
 int	execute(char **command, int input, int output)
 {
-	int	i;
-
 	if (command && is_builtin(command[0]))
 		return (builtin(command));
 	command[0] = find_command_path(command[0]);

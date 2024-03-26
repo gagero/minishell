@@ -17,23 +17,22 @@ int	get_pipe_size(int pipe, int *size)
 	return (0);
 }
 
-int process_pipes(t_list *lexed, int pipefd[2])
+int process_pipes(t_list *lexed, int input, int output)
 {
 	t_list	*found;
 	char		**cmd;
-	int size;
-	int copy[2];
-	char	*buf;
+	int internal_pipe[2];
 
-	buf = NULL;
-  if (ERROR((pipe(copy) == -1), "Pipe error"))
+  if (ERROR((pipe(internal_pipe) == -1), "Pipe error"))
 		return (1);
 	found = lexed_find(lexed, PIPE);
 	if (!found)
 	{
+		if (((t_type *)lexed->content)->word.word < (char *)4)
+			return (write(2, "syntax error\n", 13), 1);
 		// TODO: replace with quote-compliant version
 		cmd = ft_split(((t_type *)lexed->content)->word.word, ' ');
-		execute(cmd, pipefd[READ_END], copy[WRITE_END]);
+		execute(cmd, input, output);
 		/* free(cmds[0]); */
 		return (0);
 	}
@@ -42,25 +41,21 @@ int process_pipes(t_list *lexed, int pipefd[2])
 		if (!found->prev)
 			return (write(STDERR_FILENO, "syntax error\n", 13), 1);
 		cmd = ft_split(((t_type *)found->prev->content)->word.word, ' ');
-		execute(cmd, pipefd[READ_END], copy[WRITE_END]);
+		execute(cmd, input, internal_pipe[WRITE_END]);
 	}
 	while (found)
 	{
-		if (buf)
+		if (!found || !found->next || !lexed_find(found->next, PIPE))
 		{
-			write(copy[WRITE_END], buf, size);
-			free(buf);
+			if (((t_type *)ft_lstlast(lexed)->content)->word.word < (char *)4)
+				return (write(2, "syntax error\n", 13), 1);
+			cmd = ft_split(((t_type *)ft_lstlast(lexed)->content)->word.word, ' ');
+			execute(cmd, internal_pipe[READ_END], output);
+			return (0);
 		}
 		cmd = ft_split(((t_type *)found->next->content)->word.word, ' ');
-		execute(cmd, copy[READ_END], copy[WRITE_END]);
+		execute(cmd, internal_pipe[READ_END], internal_pipe[WRITE_END]);
 		found = lexed_find(found->next, PIPE);
-		if (ERROR((pipe(copy) == -1), "Pipe error"))
-			return (1);
-		get_pipe_size(copy[READ_END], &size);
-		buf = malloc(size);
-		read(copy[READ_END], buf, size);
 	}
-	write(pipefd[WRITE_END], buf, size);
-	free(buf);
 	return (0);
 }

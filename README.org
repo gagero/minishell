@@ -64,3 +64,5 @@
   * pipe first command outputs then hangs
   * Redirections don't seem to do anything
   * need to test quotes (unmatched quotes, nested quotes, envvar expansion in quotes)
+  * Triple pipes don't work
+    * Single pipes segfault occasionally
